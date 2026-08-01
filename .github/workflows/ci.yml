@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  packages:
+    name: Discover changed packages
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.matrix.outputs.count }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: matrix
+        name: Build package matrix
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/package-matrix.ts changed
+
+  check:
+    name: Check ${{ matrix.package }}
+    needs: packages
+    if: needs.packages.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.packages.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check formatting
+        run: pnpm run check:format
+      - name: Run ESLint
+        run: pnpm run check:lint
+      - name: Check TypeScript
+        run: pnpm run check:type
+      - name: Run tests
+        run: pnpm run check:test
+      - name: Build package
+        run: pnpm run build
+      - name: Smoke test compiled entry
+        run: pnpm run smoke
+      - name: Inspect package contents
+        run: npm pack --dry-run

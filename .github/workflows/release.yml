@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/*/package.json
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package directory or npm name, for example pi-attach
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  packages:
+    name: Discover packages
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.matrix.outputs.count }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        name: Build package matrix
+        env:
+          INPUT_PACKAGE: ${{ inputs.package }}
+        run: node scripts/package-matrix.ts all
+
+  publish:
+    name: Publish ${{ matrix.package }}
+    needs: packages
+    if: needs.packages.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.packages.outputs.matrix) }}
+    environment: npm-production
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - id: version
+        name: Check published version
+        env:
+          PACKAGE_NAME: ${{ matrix.name }}
+        run: |
+          version=$(node --print "require('./package.json').version")
+          error_log=$(mktemp)
+          if npm view "$PACKAGE_NAME@$version" version > /dev/null 2> "$error_log"; then
+            exit 0
+          elif grep -Eq 'E404|404 Not Found' "$error_log"; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            cat "$error_log" >&2
+            exit 1
+          fi
+      - name: Build package
+        if: steps.version.outputs.publish == 'true'
+        run: pnpm run build
+      - name: Smoke test compiled entry
+        if: steps.version.outputs.publish == 'true'
+        run: pnpm run smoke
+      - name: Publish package
+        if: steps.version.outputs.publish == 'true'
+        run: npm publish --provenance --access public

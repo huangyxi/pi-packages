@@ -1,0 +1,36 @@
+{
+	"name": "@hyxi/pi-attach",
+	"version": "0.1.0",
+	"description": "Persistent Pi context from explicit local attachment mentions",
+	"license": "MIT",
+	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-attach",
+	"type": "module",
+	"pi": {
+		"extensions": [
+			"./dist/extension.js"
+		]
+	},
+	"main": "./dist/extension.js",
+	"exports": {
+		".": "./dist/extension.js"
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"engines": {
+		"node": ">=24"
+	},
+	"scripts": {
+		"build": "vite build",
+		"check": "run-s check:*",
+		"check:eslint": "eslint . --no-error-on-unmatched-pattern",
+		"check:prettier": "prettier --check .",
+		"check:type": "tsc --noEmit",
+		"check:test": "vitest run",
+		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
+	},
+	"dependencies": {
+		"@llamaindex/liteparse": "2.10.1"
+	}
+}

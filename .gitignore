@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+**/dist/
+**/coverage/
+*.tsbuildinfo
+
+# Package artifacts
+*.tgz
+
+# Local Pi state and project configuration
+.pi/
+.pi-subagents/
+
+# Environment and local settings
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/

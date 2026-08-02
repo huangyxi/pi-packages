@@ -14,7 +14,7 @@ export interface MentionCandidate {
 export interface ProcessedAttachment {
 	path: string;
 	mentions: string[];
-	sourceBytes: number;
+	sourceBytes?: number;
 	contentChars: number;
 	contentLines: number;
 	requestedLines?: string;
@@ -35,6 +35,11 @@ export type Resolution =
 			candidate: MentionCandidate;
 	  }
 	| {
+			kind: 'url';
+			url: string;
+			candidate: MentionCandidate;
+	  }
+	| {
 			kind: 'content';
 			attachment: ProcessedAttachment;
 			candidate: MentionCandidate;
@@ -44,8 +49,10 @@ export interface AttachmentResolver {
 	resolve(candidate: MentionCandidate, context: ResolveContext): Promise<Resolution | undefined>;
 }
 
-export interface FileGroup {
-	path: string;
+export type AttachmentSource = { kind: 'file'; value: string } | { kind: 'url'; value: string };
+
+export interface SourceGroup {
+	source: AttachmentSource;
 	mentions: MentionCandidate[];
 	firstMention: number;
 }

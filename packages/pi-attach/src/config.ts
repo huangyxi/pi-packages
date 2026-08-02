@@ -1,4 +1,12 @@
-import { booleanField, defineConfigSchema, integerField, numberField, type InferConfig } from '@/utils/config';
+import { tmpdir } from 'node:os';
+import {
+	booleanField,
+	defineConfigSchema,
+	integerField,
+	numberField,
+	stringField,
+	type InferConfig,
+} from '@/utils/config';
 
 export const ATTACH_CONFIG_SCHEMA = defineConfigSchema('attach', {
 	/** Maximum Unicode code points included in each ordinary attachment preview. */
@@ -9,6 +17,8 @@ export const ATTACH_CONFIG_SCHEMA = defineConfigSchema('attach', {
 	limitExplicitLines: booleanField(false),
 	/** Maximum number of file attachments processed concurrently. */
 	maxAttachmentConcurrency: integerField(4, 1),
+	/** Base directory for private per-conversion temporary directories. */
+	temporaryDirectory: stringField(tmpdir(), /^[\s\S]+$/),
 });
 
 export type AttachConfig = InferConfig<typeof ATTACH_CONFIG_SCHEMA>;

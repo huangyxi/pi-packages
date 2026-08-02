@@ -1,18 +1,21 @@
 import { fork } from 'node:child_process';
-import { mkdtemp, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { AttachmentSource } from '../types';
 import { isJsonObject } from '../utils/validation';
 
-export async function parseWithLiteParse(
-	sourcePath: string,
+export async function convertWithMarkit(
+	source: AttachmentSource,
 	workerPath: string,
 	signal: AbortSignal,
+	temporaryDirectory: string,
 ): Promise<{ text: string; parsedPath: string }> {
-	const directory = await mkdtemp(join(tmpdir(), 'pi-attach-'));
-	const parsedPath = join(directory, 'parsed.txt');
+	await mkdir(temporaryDirectory, { recursive: true, mode: 0o700 });
+	const directory = await mkdtemp(join(temporaryDirectory, 'pi-attach-'));
+	const parsedPath = join(directory, 'parsed.md');
 	return new Promise((resolve, reject) => {
 		const child = fork(workerPath, [], {
+			execArgv: process.execArgv.filter((argument) => !argument.startsWith('--input-type')),
 			stdio: [
 				'ignore',
 				'ignore',
@@ -28,7 +31,7 @@ export async function parseWithLiteParse(
 		const settleError = (error: unknown) => {
 			if (settled) return;
 			cleanup();
-			reject(error instanceof Error ? error : new Error('LiteParse failed'));
+			reject(error instanceof Error ? error : new Error('Markit failed'));
 		};
 		const settleResult = (text: string) => {
 			if (settled) return;
@@ -44,11 +47,16 @@ export async function parseWithLiteParse(
 			return;
 		}
 		signal.addEventListener('abort', cancel, { once: true });
+		const exitBeforeResponse = (code: number | null, childSignal: NodeJS.Signals | null) => {
+			settleError(new Error(`Markit worker exited before responding (${childSignal ?? String(code)})`));
+		};
 		child.once('error', settleError);
+		child.once('exit', exitBeforeResponse);
 		child.once('message', (message: unknown) => {
+			child.removeListener('exit', exitBeforeResponse);
 			if (child.connected) child.disconnect();
 			if (!isJsonObject(message) || typeof message.text !== 'string') {
-				settleError(new Error('LiteParse failed'));
+				settleError(new Error('Markit failed'));
 				return;
 			}
 			const text = message.text;
@@ -61,6 +69,6 @@ export async function parseWithLiteParse(
 				},
 			);
 		});
-		child.send({ path: sourcePath });
+		child.send(source);
 	});
 }

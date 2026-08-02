@@ -16,4 +16,4 @@ Pi installs packages globally by default. Add `-l` to install into the current p
 
 | Package                               | Installation                     | Description                                                                                                        |
 | ------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [@hyxi/pi-attach](packages/pi-attach) | `pi install npm:@hyxi/pi-attach` | Adds persistent, bounded local context from explicit file and skill mentions without rewriting the user's message. |
+| [@hyxi/pi-attach](packages/pi-attach) | `pi install npm:@hyxi/pi-attach` | Adds persistent, bounded context from explicit file, URL, and skill mentions without rewriting the user's message. |

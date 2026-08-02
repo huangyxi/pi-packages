@@ -12,7 +12,7 @@ export function renderContext(
 			const attributes = [
 				`path="${attribute(attachment.path)}"`,
 				`mentions="${attribute(attachment.mentions.join(', '))}"`,
-				`source_bytes="${String(attachment.sourceBytes)}"`,
+				...(attachment.sourceBytes === undefined ? [] : [`source_bytes="${String(attachment.sourceBytes)}"`]),
 				`content_chars="${String(attachment.contentChars)}"`,
 				`content_lines="${String(attachment.contentLines)}"`,
 				...(attachment.requestedLines ? [`requested_lines="${attribute(attachment.requestedLines)}"`] : []),

@@ -32,6 +32,14 @@ export function booleanField(defaultValue: boolean): ConfigField<boolean> {
 	};
 }
 
+export function stringField(defaultValue: string, pattern: RegExp = /.*/): ConfigField<string> {
+	const validator = new RegExp(pattern.source, pattern.flags.replace(/[gy]/g, ''));
+	return {
+		defaultValue,
+		validate: (value): value is string => typeof value === 'string' && validator.test(value),
+	};
+}
+
 export function numberField(
 	defaultValue: number,
 	minimum = Number.NEGATIVE_INFINITY,
@@ -103,7 +111,13 @@ export async function readConfig<Schema extends ConfigSchema>(
 	trusted: boolean,
 	reportIssue: (message: string) => void,
 ): Promise<InferConfig<Schema>> {
-	const global = await readConfigFile(schema, join(homedir(), '.pi', 'agent', `${schema.name}.json`), reportIssue);
-	const project = trusted ? await readConfigFile(schema, join(cwd, '.pi', `${schema.name}.json`), reportIssue) : {};
+	const global = await readConfigFile(
+		schema,
+		join(homedir(), '.pi', 'agent', 'extensions', `${schema.name}.json`),
+		reportIssue,
+	);
+	const project = trusted
+		? await readConfigFile(schema, join(cwd, '.pi', 'extensions', `${schema.name}.json`), reportIssue)
+		: {};
 	return { ...configDefaults(schema), ...global, ...project };
 }

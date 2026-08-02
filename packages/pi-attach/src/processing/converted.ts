@@ -1,17 +1,20 @@
 import { stat } from 'node:fs/promises';
 import type { AttachConfig } from '../config';
-import type { MentionCandidate, ProcessedAttachment } from '../types';
-import { parseWithLiteParse } from './liteparse';
+import type { AttachmentSource, MentionCandidate, ProcessedAttachment } from '../types';
+import { convertWithMarkit } from './markit';
 import { createPreview, selectContext } from './preview';
 
-export async function processBinary(
-	path: string,
+export async function processConverted(
+	source: AttachmentSource,
 	candidates: readonly MentionCandidate[],
 	config: AttachConfig,
 	workerPath: string,
 	signal: AbortSignal,
 ): Promise<ProcessedAttachment> {
-	const [metadata, parsed] = await Promise.all([stat(path), parseWithLiteParse(path, workerPath, signal)]);
+	const [metadata, parsed] = await Promise.all([
+		source.kind === 'file' ? stat(source.value) : undefined,
+		convertWithMarkit(source, workerPath, signal, config.temporaryDirectory),
+	]);
 	const lines = parsed.text.split(/\r?\n/);
 	const selection = selectContext(parsed.text, candidates);
 	const limit =
@@ -20,9 +23,9 @@ export async function processBinary(
 			: config.perAttachLength;
 	const preview = createPreview(selection.content, limit);
 	return {
-		path,
+		path: source.value,
 		mentions: candidates.map((candidate) => candidate.raw),
-		sourceBytes: metadata.size,
+		...(metadata ? { sourceBytes: metadata.size } : {}),
 		contentChars: Array.from(parsed.text).length,
 		contentLines: lines.length,
 		...(selection.ranges

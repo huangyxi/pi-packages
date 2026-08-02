@@ -14,12 +14,12 @@ export default defineConfig({
 		lib: {
 			entry: {
 				extension: 'src/extension.ts',
-				'liteparse-worker': 'src/liteparse-worker.ts',
+				'markit-worker': 'src/markit-worker.ts',
 			},
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: (id) => id.startsWith('node:') || id === '@llamaindex/liteparse',
+			external: (id) => id.startsWith('node:') || id === 'markit-ai',
 		},
 	},
 });

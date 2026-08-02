@@ -15,6 +15,7 @@ describe('rendering', () => {
 				truncated: false,
 			},
 		]);
+		expect(output).toContain('path="/a&lt;&amp;"');
 		expect(output).toContain('&lt;/attachment&gt;');
 	});
 	it('never splits surrogate pairs', () => {

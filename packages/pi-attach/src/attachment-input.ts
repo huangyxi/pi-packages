@@ -1,20 +1,20 @@
 import { fileURLToPath } from 'node:url';
 import { readConfig } from '@/utils/config';
 import { ATTACH_CONFIG_SCHEMA } from './config';
-import { processFileGroups } from './processing/process-file-groups';
+import { processSourceGroups } from './processing/process-file-groups';
 import { renderContext } from './rendering';
 import type { ResolverRegistry } from './resolvers/resolver-registry';
 import { scanMentions } from './scanner';
-import type { AttachmentInputResult, CompletedAttachment, FileGroup, MentionCandidate } from './types';
+import type { AttachmentInputResult, CompletedAttachment, MentionCandidate, SourceGroup } from './types';
 
-const workerPath = fileURLToPath(import.meta.resolve('./liteparse-worker.js'));
+const workerPath = fileURLToPath(import.meta.resolve('./markit-worker.js'));
 
 async function resolveMentions(
 	candidates: readonly MentionCandidate[],
 	cwd: string,
 	registry: ResolverRegistry,
-): Promise<{ files: FileGroup[]; completed: CompletedAttachment[] }> {
-	const files = new Map<string, FileGroup>();
+): Promise<{ sources: SourceGroup[]; completed: CompletedAttachment[] }> {
+	const sources = new Map<string, SourceGroup>();
 	const completed: CompletedAttachment[] = [];
 
 	for (const [index, candidate] of candidates.entries()) {
@@ -27,18 +27,20 @@ async function resolveMentions(
 			});
 			continue;
 		}
-		if (resolution?.kind !== 'file') continue;
-		const existing = files.get(resolution.path);
+		if (resolution?.kind !== 'file' && resolution?.kind !== 'url') continue;
+		const value = resolution.kind === 'file' ? resolution.path : resolution.url;
+		const key = `${resolution.kind}:${value}`;
+		const existing = sources.get(key);
 		if (existing) existing.mentions.push(candidate);
 		else
-			files.set(resolution.path, {
-				path: resolution.path,
+			sources.set(key, {
+				source: { kind: resolution.kind, value },
 				mentions: [candidate],
 				firstMention: index,
 			});
 	}
 
-	return { files: [...files.values()], completed };
+	return { sources: [...sources.values()], completed };
 }
 
 export async function processAttachmentInput(
@@ -56,7 +58,7 @@ export async function processAttachmentInput(
 		? AbortSignal.timeout(config.attachmentProcessingTimeoutSeconds * 1000)
 		: new AbortController().signal;
 	const resolved = await resolveMentions(candidates, cwd, registry);
-	const processed = await processFileGroups(resolved.files, config, workerPath, signal, reportIssue);
+	const processed = await processSourceGroups(resolved.sources, config, workerPath, signal, reportIssue);
 	const completed = [...resolved.completed, ...processed].sort(
 		(left, right) => left.firstMention - right.firstMention,
 	);

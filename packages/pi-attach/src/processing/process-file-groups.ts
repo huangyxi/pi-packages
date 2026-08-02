@@ -1,21 +1,44 @@
 import { readFile } from 'node:fs/promises';
+import { extname } from 'node:path';
 import type { AttachConfig } from '../config';
-import type { CompletedAttachment, FileGroup } from '../types';
+import type { CompletedAttachment, SourceGroup } from '../types';
 import { mapConcurrent } from '../utils/concurrency';
-import { processBinary } from './binary';
+import { processConverted } from './converted';
 import { isText } from './preview';
 import { processText } from './text';
 
-async function processFile(
-	group: FileGroup,
+const MARKDOWN_CONVERSION_EXTENSIONS = new Set([
+	'.atom',
+	'.csv',
+	'.htm',
+	'.html',
+	'.ipynb',
+	'.json',
+	'.rss',
+	'.tsv',
+	'.xml',
+	'.svg',
+	'.yaml',
+	'.yml',
+]);
+
+async function processSource(
+	group: SourceGroup,
 	config: AttachConfig,
 	workerPath: string,
 	signal: AbortSignal,
 ): Promise<CompletedAttachment> {
-	const sample = (await readFile(group.path, { signal })).subarray(0, 8192);
-	const attachment = isText(sample)
-		? await processText(group.path, group.mentions, config, signal)
-		: await processBinary(group.path, group.mentions, config, workerPath, signal);
+	let directText = false;
+	if (
+		group.source.kind === 'file' &&
+		!MARKDOWN_CONVERSION_EXTENSIONS.has(extname(group.source.value).toLowerCase())
+	) {
+		const sample = (await readFile(group.source.value, { signal })).subarray(0, 8192);
+		directText = isText(sample);
+	}
+	const attachment = directText
+		? await processText(group.source.value, group.mentions, config, signal)
+		: await processConverted(group.source, group.mentions, config, workerPath, signal);
 	return {
 		attachment,
 		mentions: group.mentions,
@@ -23,8 +46,8 @@ async function processFile(
 	};
 }
 
-export async function processFileGroups(
-	groups: readonly FileGroup[],
+export async function processSourceGroups(
+	groups: readonly SourceGroup[],
 	config: AttachConfig,
 	workerPath: string,
 	signal: AbortSignal,
@@ -32,7 +55,7 @@ export async function processFileGroups(
 ): Promise<CompletedAttachment[]> {
 	const results = await mapConcurrent(groups, config.maxAttachmentConcurrency, async (group) => {
 		try {
-			return await processFile(group, config, workerPath, signal);
+			return await processSource(group, config, workerPath, signal);
 		} catch {
 			reportIssue(`could not attach ${group.mentions.map(({ raw }) => raw).join(', ')}`);
 			return undefined;

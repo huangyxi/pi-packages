@@ -35,6 +35,7 @@ function protectedEnd(text: string, start: number): number | undefined {
 }
 
 function parseValue(raw: string): Pick<MentionCandidate, 'value' | 'selector'> | undefined {
+	if (/^https?:\/\//i.test(raw)) return { value: raw };
 	const match = /^(.*?)(?:#L(\d+)(?:-(\d+))?)?$/.exec(raw);
 	if (!match?.[1]) return undefined;
 	if (raw.includes('#') && !match[2]) return undefined;

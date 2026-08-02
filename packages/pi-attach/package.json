@@ -1,9 +1,21 @@
 {
 	"name": "@hyxi/pi-attach",
-	"version": "0.1.0",
-	"description": "Persistent Pi context from explicit local attachment mentions",
+	"version": "0.2.0",
+	"description": "Persistent Pi context from explicit file, URL, and skill attachment mentions",
 	"license": "MIT",
 	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-attach",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/huangyxi/pi-packages.git",
+		"directory": "packages/pi-attach"
+	},
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"attachments",
+		"markdown",
+		"context"
+	],
 	"type": "module",
 	"pi": {
 		"extensions": [
@@ -31,6 +43,6 @@
 		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
 	},
 	"dependencies": {
-		"@llamaindex/liteparse": "2.10.1"
+		"markit-ai": "0.5.3"
 	}
 }

@@ -10,7 +10,7 @@ export async function processText(
 	signal: AbortSignal,
 ): Promise<ProcessedAttachment> {
 	const [source, metadata] = await Promise.all([readFile(path, { signal }), stat(path)]);
-	if (!isText(source.subarray(0, 8192))) throw new Error('non-text source requires LiteParse');
+	if (!isText(source.subarray(0, 8192))) throw new Error('non-text source requires Markit');
 	const content = new TextDecoder('utf-8', { fatal: true }).decode(source);
 	const lines = content.split(/\r?\n/);
 	const selection = selectContext(content, candidates);

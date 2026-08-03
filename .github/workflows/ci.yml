@@ -44,14 +44,12 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Check formatting
-        run: pnpm run check:format
-      - name: Run ESLint
-        run: pnpm run check:lint
+      - name: Run Lint
+        run: pnpm run lint
       - name: Check TypeScript
-        run: pnpm run check:type
+        run: pnpm run typecheck
       - name: Run tests
-        run: pnpm run check:test
+        run: pnpm run test
       - name: Build package
         run: pnpm run build
       - name: Smoke test compiled entry

@@ -1,9 +1,10 @@
 {
 	"extends": "./tsconfig.base.json",
-	"compilerOptions": {
-		"rootDir": ".",
-		"noEmit": true,
-		"types": ["node"]
-	},
-	"include": ["eslint.config.ts", "scripts", "utils"]
+	"include": [
+		"eslint.config.ts",
+		"scripts",
+		"src",
+		"test",
+		"utils"
+	]
 }

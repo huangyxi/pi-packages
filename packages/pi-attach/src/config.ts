@@ -6,7 +6,7 @@ import {
 	numberField,
 	stringField,
 	type InferConfig,
-} from '@/utils/config';
+} from '@/src/utils/config';
 
 export const ATTACH_CONFIG_SCHEMA = defineConfigSchema('attach', {
 	/** Maximum Unicode code points included in each ordinary attachment preview. */

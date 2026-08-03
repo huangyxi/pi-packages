@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { readConfig } from '@/utils/config';
+import { readConfig } from '@/src/utils/config';
 import { ATTACH_CONFIG_SCHEMA } from './config';
 import { processSourceGroups } from './processing/process-file-groups';
 import { renderContext } from './rendering';

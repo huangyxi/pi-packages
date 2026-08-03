@@ -2,7 +2,15 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { booleanField, defineConfigSchema, integerField, readConfig, stringField } from '@/utils/config';
+import {
+	booleanField,
+	defineConfigSchema,
+	getAgentDirectory,
+	integerField,
+	readConfig,
+	stringEnumField,
+	stringField,
+} from '../src/utils/config';
 
 const temporaryDirectories: string[] = [];
 
@@ -17,6 +25,20 @@ afterEach(async () => {
 });
 
 describe('config utilities', () => {
+	it('resolves agent directories without accepting relative overrides', () => {
+		expect(getAgentDirectory({}, '/home/test')).toBe('/home/test/.pi/agent');
+		expect(getAgentDirectory({ PI_CODING_AGENT_DIR: '' }, '/home/test')).toBe('/home/test/.pi/agent');
+		expect(getAgentDirectory({ PI_CODING_AGENT_DIR: '~/custom' }, '/home/test')).toBe('/home/test/custom');
+		expect(getAgentDirectory({ PI_CODING_AGENT_DIR: '/var/lib/pi' }, '/home/test')).toBe('/var/lib/pi');
+		expect(() => getAgentDirectory({ PI_CODING_AGENT_DIR: 'relative' }, '/home/test')).toThrow('absolute');
+	});
+
+	it('validates string enums', () => {
+		const field = stringEnumField('first', ['first', 'second']);
+		expect(field.validate('second')).toBe(true);
+		expect(field.validate('third')).toBe(false);
+	});
+
 	it('loads known valid fields and reports invalid values', async () => {
 		const name = `test-${crypto.randomUUID()}`;
 		const schema = defineConfigSchema(name, {

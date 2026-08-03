@@ -35,11 +35,15 @@
 	},
 	"scripts": {
 		"build": "vite build",
-		"check": "run-s check:*",
-		"check:eslint": "eslint . --no-error-on-unmatched-pattern",
-		"check:prettier": "prettier --check .",
-		"check:type": "tsc --noEmit",
-		"check:test": "vitest run",
+		"check": "run-s lint typecheck test",
+		"lint": "run-p lint:*",
+		"lint:eslint": "eslint .",
+		"lint:prettier": "prettier --check .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"format": "run-s format:*",
+		"format:eslint": "eslint . --fix",
+		"format:prettier": "prettier --write --list-different .",
 		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
 	},
 	"dependencies": {

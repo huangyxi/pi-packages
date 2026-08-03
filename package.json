@@ -8,14 +8,21 @@
 	},
 	"scripts": {
 		"build": "pnpm -r --if-present run build",
-		"check": "run-s check:*",
-		"check:eslint": "eslint .",
-		"check:prettier": "prettier --check .",
-		"check:type": "tsc --noEmit && pnpm -r --if-present run check:type",
-		"check:test": "pnpm -r --if-present run check:test",
+		"check": "run-s lint typecheck test",
+		"lint": "run-p lint:*",
+		"lint:eslint": "eslint . --ignore-pattern 'packages/**'",
+		"lint:prettier": "prettier --check .",
+		"lint:packages": "pnpm -r --if-present run lint",
+		"typecheck": "run-p typecheck:*",
+		"typecheck:root": "tsc --noEmit",
+		"typecheck:packages": "pnpm -r --if-present run typecheck",
+		"test": "run-p test:*",
+		"test:root": "vitest run --dir test",
+		"test:packages": "pnpm -r --if-present run test",
 		"format": "run-s format:*",
-		"format:eslint": "eslint . --fix",
-		"format:prettier": "prettier --write ."
+		"format:eslint": "eslint . --fix --ignore-pattern 'packages/**'",
+		"format:prettier": "prettier --write --list-different .",
+		"format:packages": "pnpm -r --if-present run format"
 	},
 	"devDependencies": {
 		"@earendil-works/pi-coding-agent": "^0.83.0",

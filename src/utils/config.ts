@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 
 interface ConfigField<T> {
 	defaultValue: T;
@@ -32,7 +32,7 @@ export function booleanField(defaultValue: boolean): ConfigField<boolean> {
 	};
 }
 
-export function stringField(defaultValue: string, pattern: RegExp = /.*/): ConfigField<string> {
+export function stringField(defaultValue: string, pattern = /.*/): ConfigField<string> {
 	const validator = new RegExp(pattern.source, pattern.flags.replace(/[gy]/g, ''));
 	return {
 		defaultValue,
@@ -64,6 +64,30 @@ export function integerField(
 	};
 }
 
+export function stringEnumField<const Values extends readonly [string, ...string[]]>(
+	defaultValue: Values[number],
+	values: Values,
+): ConfigField<Values[number]> {
+	const allowed = new Set<string>(values);
+	return {
+		defaultValue,
+		validate: (value): value is Values[number] => typeof value === 'string' && allowed.has(value),
+	};
+}
+
+export function getAgentDirectory(env: NodeJS.ProcessEnv = process.env, home: string = homedir()): string {
+	const configured = env.PI_CODING_AGENT_DIR;
+	if (configured === undefined || configured === '') return join(home, '.pi', 'agent');
+	const expanded =
+		configured === '~' ? home : configured.startsWith('~/') ? join(home, configured.slice(2)) : configured;
+	if (!isAbsolute(expanded)) throw new Error('PI_CODING_AGENT_DIR must be an absolute path');
+	return resolve(expanded);
+}
+
+export interface ReadConfigFileOptions {
+	reportUnknownFields?: boolean;
+}
+
 async function readJsonObject(
 	path: string,
 ): Promise<{ status: 'missing' } | { status: 'invalid' } | { status: 'loaded'; value: Record<string, unknown> }> {
@@ -81,6 +105,7 @@ async function readConfigFile<Schema extends ConfigSchema>(
 	schema: Schema,
 	path: string,
 	reportIssue: (message: string) => void,
+	options: ReadConfigFileOptions = {},
 ): Promise<Partial<InferConfig<Schema>>> {
 	const result = await readJsonObject(path);
 	if (result.status === 'missing') return {};
@@ -90,6 +115,11 @@ async function readConfigFile<Schema extends ConfigSchema>(
 	}
 
 	const config: Record<string, unknown> = {};
+	if (options.reportUnknownFields) {
+		for (const key of Object.keys(result.value)) {
+			if (!(key in schema.fields)) reportIssue(`unknown ${key} in ${path}`);
+		}
+	}
 	for (const [key, field] of Object.entries(schema.fields)) {
 		if (!(key in result.value)) continue;
 		const value = result.value[key];
@@ -105,6 +135,26 @@ function configDefaults<Schema extends ConfigSchema>(schema: Schema): InferConfi
 	) as InferConfig<Schema>;
 }
 
+export interface ReadGlobalConfigOptions extends ReadConfigFileOptions {
+	env?: NodeJS.ProcessEnv;
+	home?: string;
+}
+
+export async function readGlobalConfig<Schema extends ConfigSchema>(
+	schema: Schema,
+	reportIssue: (message: string) => void,
+	options: ReadGlobalConfigOptions = {},
+): Promise<InferConfig<Schema>> {
+	const agentDirectory = getAgentDirectory(options.env, options.home);
+	const global = await readConfigFile(
+		schema,
+		join(agentDirectory, 'extensions', `${schema.name}.json`),
+		reportIssue,
+		options,
+	);
+	return { ...configDefaults(schema), ...global };
+}
+
 export async function readConfig<Schema extends ConfigSchema>(
 	schema: Schema,
 	cwd: string,
@@ -113,7 +163,7 @@ export async function readConfig<Schema extends ConfigSchema>(
 ): Promise<InferConfig<Schema>> {
 	const global = await readConfigFile(
 		schema,
-		join(homedir(), '.pi', 'agent', 'extensions', `${schema.name}.json`),
+		join(getAgentDirectory(), 'extensions', `${schema.name}.json`),
 		reportIssue,
 	);
 	const project = trusted

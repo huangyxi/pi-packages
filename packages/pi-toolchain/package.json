@@ -1,0 +1,63 @@
+{
+	"name": "@hyxi/pi-toolchain",
+	"version": "0.1.0",
+	"description": "Dependency-aware user-space toolchain provisioning for Pi",
+	"license": "MIT",
+	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-toolchain",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/huangyxi/pi-packages.git",
+		"directory": "packages/pi-toolchain"
+	},
+	"type": "module",
+	"pi": {
+		"extensions": [
+			"./dist/extension.js"
+		]
+	},
+	"main": "./dist/extension.js",
+	"exports": {
+		".": "./dist/extension.js",
+		"./catalog": {
+			"types": "./dist/catalog/types.d.ts",
+			"import": "./dist/catalog/types.js"
+		}
+	},
+	"bin": {
+		"pi-toolchain": "./dist/cli.js"
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"engines": {
+		"node": ">=24"
+	},
+	"scripts": {
+		"build": "run-s build:*",
+		"build:vite": "vite build",
+		"build:finalize": "node scripts/finalize-cli.ts",
+		"check": "run-s lint typecheck test",
+		"lint": "run-p lint:*",
+		"lint:eslint": "eslint .",
+		"lint:prettier": "prettier --check .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"format": "run-s format:*",
+		"format:eslint": "eslint . --fix",
+		"format:prettier": "prettier --write --list-different .",
+		"smoke": "node --input-type=module --eval \"const m=await import('./dist/extension.js');if(typeof m.default!=='function')process.exit(1)\" && node dist/cli.js help && node scripts/smoke-dist.ts"
+	},
+	"dependencies": {
+		"@ericcornelissen/bash-parser": "0.5.3",
+		"tar-stream": "3.1.7",
+		"undici": "8.5.0",
+		"yauzl": "3.2.0"
+	},
+	"devDependencies": {
+		"@types/tar-stream": "^3.1.4",
+		"@types/yauzl": "2.10.3",
+		"@types/yazl": "^3.3.1",
+		"yazl": "^3.3.1"
+	}
+}

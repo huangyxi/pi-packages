@@ -1,5 +1,7 @@
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { readFile } from 'node:fs/promises';
+
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+
 import type { ResolverRegistry } from './resolver-registry';
 
 function stripFrontmatter(source: string): string {

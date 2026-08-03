@@ -1,6 +1,6 @@
 {
 	"name": "@hyxi/pi-attach",
-	"version": "0.2.0",
+	"version": "0.1.0",
 	"description": "Persistent Pi context from explicit file, URL, and skill attachment mentions",
 	"license": "MIT",
 	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-attach",

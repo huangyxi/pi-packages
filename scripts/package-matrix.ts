@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { appendFile, readFile, readdir } from 'node:fs/promises';
+import { appendFile, readdir, readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 interface PackageEntry {

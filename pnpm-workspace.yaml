@@ -1,2 +1,3 @@
+minimumReleaseAge: 1440 # 1 day in minutes
 packages:
   - packages/*

@@ -1,4 +1,5 @@
 import { stat } from 'node:fs/promises';
+
 import type { AttachConfig } from '../config';
 import type { AttachmentSource, MentionCandidate, ProcessedAttachment } from '../types';
 import { convertWithMarkit } from './markit';

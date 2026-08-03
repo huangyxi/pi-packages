@@ -1,6 +1,7 @@
 import { realpath, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
+
 import type { ResolverRegistry } from './resolver-registry';
 
 function expandPath(value: string, cwd: string): string {

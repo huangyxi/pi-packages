@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+
 import { processAttachmentInput } from './attachment-input';
 import { registerFileResolver } from './resolvers/file-resolver';
 import { ResolverRegistry } from './resolvers/resolver-registry';

@@ -1,0 +1,3 @@
+# Propagate temporary bypass through child environment
+
+Pi Envguard will propagate an active user-granted bypass to newly spawned `pi-subagents` children through a non-secret process-environment marker, accepted only in processes carrying the documented `PI_SUBAGENT_CHILD=1` marker. Separate Pi processes do not share extension memory, and coupling to subagent internals would be brittle; consequently child support requires Pi Envguard to be loaded there, and already-running children cannot be changed retroactively by parent steering. The markers provide advisory propagation rather than authentication: another same-user process can forge them, and preventing that requires a sandbox or authenticated launch channel outside this package's scope.

@@ -1,0 +1,3 @@
+# Redact prospective final tool results only
+
+Pi Envguard will redact eligible text in final tool results intercepted after the extension loads. The transformed result reaches model context and session persistence when downstream `tool_result` handlers preserve it, so Envguard should load after other result-transforming extensions; Pi exposes no final post-chain hook that can prevent a later handler from replacing content. It will not rewrite historical context, structured details, images, arguments, files, or earlier streaming TUI output, because doing so would exceed Pi's reliable interception points and turn defense-in-depth redaction into an inaccurate local-secrecy claim.

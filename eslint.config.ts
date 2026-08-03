@@ -1,4 +1,5 @@
 import { defineConfig } from 'eslint/config';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tseslint from 'typescript-eslint';
 
 const TYPESCRIPT_FILES = [
@@ -16,6 +17,9 @@ export default defineConfig(
 			'**/*.cjs',
 			'**/*.mjs',
 		],
+		plugins: {
+			'simple-import-sort': simpleImportSort,
+		},
 	},
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
@@ -26,6 +30,10 @@ export default defineConfig(
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname,
 			},
+		},
+		rules: {
+			'simple-import-sort/imports': 'error',
+			'simple-import-sort/exports': 'error',
 		},
 	},
 );

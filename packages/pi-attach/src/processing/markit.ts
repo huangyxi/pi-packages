@@ -1,6 +1,7 @@
 import { fork } from 'node:child_process';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import type { AttachmentSource } from '../types';
 import { isJsonObject } from '../utils/validation';
 

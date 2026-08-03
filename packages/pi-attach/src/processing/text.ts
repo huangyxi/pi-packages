@@ -1,4 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
+
 import type { AttachConfig } from '../config';
 import type { MentionCandidate, ProcessedAttachment } from '../types';
 import { createPreview, isText, selectContext } from './preview';

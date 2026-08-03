@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { truncateCodePoints } from '../../src/processing/preview';
 import { renderContext } from '../../src/rendering';
 

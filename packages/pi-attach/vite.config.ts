@@ -1,5 +1,7 @@
 import { resolve } from 'node:path';
+
 import { defineConfig } from 'vite';
+
 import { packageBanner } from '../../utils/vite';
 import packageMetadata from './package.json' with { type: 'json' };
 

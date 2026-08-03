@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
+
 import type { AttachConfig } from '../config';
 import type { CompletedAttachment, SourceGroup } from '../types';
 import { mapConcurrent } from '../utils/concurrency';

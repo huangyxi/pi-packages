@@ -1,11 +1,12 @@
 import { tmpdir } from 'node:os';
+
 import {
 	booleanField,
 	defineConfigSchema,
+	type InferConfig,
 	integerField,
 	numberField,
 	stringField,
-	type InferConfig,
 } from '@/src/utils/config';
 
 export const ATTACH_CONFIG_SCHEMA = defineConfigSchema('attach', {

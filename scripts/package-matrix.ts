@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { appendFile, readdir, readFile } from 'node:fs/promises';
+import { appendFile, readdir, readFile, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 interface PackageEntry {
@@ -18,14 +18,27 @@ function isPackageManifest(value: unknown): value is PackageManifest {
 
 const root = process.cwd();
 const packagesRoot = join(root, 'packages');
-const directories = (await readdir(packagesRoot, { withFileTypes: true }))
-	.filter((entry) => entry.isDirectory())
-	.map((entry) => entry.name)
+const directories = (
+	await Promise.all(
+		(await readdir(packagesRoot, { withFileTypes: true })).map(async (entry) => {
+			if (!entry.isDirectory()) return undefined;
+			const manifestPath = join(packagesRoot, entry.name, 'package.json');
+
+			try {
+				return (await stat(manifestPath)).isFile() ? entry.name : undefined;
+			} catch {
+				return undefined;
+			}
+		}),
+	)
+)
+	.filter((directory): directory is string => directory !== undefined)
 	.sort();
 
 const packages = await Promise.all(
 	directories.map(async (directory): Promise<PackageEntry> => {
-		const manifest: unknown = JSON.parse(await readFile(join(packagesRoot, directory, 'package.json'), 'utf8'));
+		const manifestPath = join(packagesRoot, directory, 'package.json');
+		const manifest: unknown = JSON.parse(await readFile(manifestPath, { encoding: 'utf8' }));
 		if (!isPackageManifest(manifest)) throw new Error(`invalid package manifest: ${directory}`);
 		return {
 			package: directory,

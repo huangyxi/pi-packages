@@ -1,3 +1,6 @@
 minimumReleaseAge: 1440 # 1 day in minutes
 packages:
   - packages/*
+allowBuilds:
+  '@google/genai': false
+  protobufjs: false

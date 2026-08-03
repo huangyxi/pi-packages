@@ -21,9 +21,11 @@ export default defineConfig(
 			'simple-import-sort': simpleImportSort,
 		},
 	},
-	tseslint.configs.strictTypeChecked,
-	tseslint.configs.stylisticTypeChecked,
 	{
+		extends: [
+			tseslint.configs.strictTypeChecked,
+			tseslint.configs.stylisticTypeChecked,
+		],
 		files: TYPESCRIPT_FILES,
 		languageOptions: {
 			parserOptions: {

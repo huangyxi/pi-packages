@@ -36,7 +36,7 @@
 	"scripts": {
 		"build": "vite build",
 		"check": "run-s lint typecheck test",
-		"lint": "run-p lint:*",
+		"lint": "run-p --continue-on-error lint:*",
 		"lint:eslint": "eslint .",
 		"lint:prettier": "prettier --check .",
 		"typecheck": "tsc --noEmit",

@@ -13,6 +13,7 @@ function expandPath(value: string, cwd: string): string {
 export function registerFileResolver(registry: ResolverRegistry): void {
 	registry.register({
 		async resolve(candidate, context) {
+			// Reject URI schemes here so later URL/skill resolvers retain ownership.
 			if (candidate.value.includes(':') && !/^[A-Za-z]:[\\/]/.test(candidate.value)) return undefined;
 			try {
 				const path = await realpath(expandPath(candidate.value, context.cwd));

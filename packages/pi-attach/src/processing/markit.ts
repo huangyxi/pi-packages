@@ -25,6 +25,7 @@ export async function convertWithMarkit(
 			],
 		});
 		let settled = false;
+		// All exit, IPC, write, and abort paths converge here and may race.
 		const cleanup = () => {
 			settled = true;
 			signal.removeEventListener('abort', cancel);

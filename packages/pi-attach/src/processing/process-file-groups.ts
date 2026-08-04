@@ -23,6 +23,7 @@ const MARKDOWN_CONVERSION_EXTENSIONS = new Set([
 	'.yml',
 ]);
 
+/** Chooses direct text only when conversion would not add useful document structure. */
 async function processSource(
 	group: SourceGroup,
 	config: AttachConfig,

@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
-import { readConfig } from '@/src/utils/config';
+import { createConfigReader } from '@/src/utils/config';
 
 import { ATTACH_CONFIG_SCHEMA } from './config';
 import { processSourceGroups } from './processing/process-file-groups';
@@ -10,7 +10,12 @@ import { scanMentions } from './scanner';
 import type { AttachmentInputResult, CompletedAttachment, MentionCandidate, SourceGroup } from './types';
 
 const workerPath = fileURLToPath(import.meta.resolve('./markit-worker.js'));
+const configReader = createConfigReader(ATTACH_CONFIG_SCHEMA, {
+	allowPartialFiles: true,
+	reportUnknownFields: false,
+});
 
+/** Resolves mentions and coalesces repeated files/URLs without losing first-mention order. */
 async function resolveMentions(
 	candidates: readonly MentionCandidate[],
 	cwd: string,
@@ -55,7 +60,7 @@ export async function processAttachmentInput(
 	const candidates = scanMentions(text);
 	if (candidates.length === 0) return undefined;
 
-	const config = await readConfig(ATTACH_CONFIG_SCHEMA, cwd, trusted, reportIssue);
+	const config = (await configReader.read({ cwd, trusted, reportIssue })).config;
 	const signal = config.attachmentProcessingTimeoutSeconds
 		? AbortSignal.timeout(config.attachmentProcessingTimeoutSeconds * 1000)
 		: new AbortController().signal;

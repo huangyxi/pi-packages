@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { processAttachmentInput } from '../../src/attachment-input';
-import { registerFileResolver } from '../../src/resolvers/file-resolver';
-import { ResolverRegistry } from '../../src/resolvers/resolver-registry';
+import { processAttachmentInput } from '../src/attachment-input';
+import { registerFileResolver } from '../src/resolvers/file-resolver';
+import { ResolverRegistry } from '../src/resolvers/resolver-registry';
 
 const temporaryDirectories: string[] = [];
 

@@ -51,6 +51,8 @@ importers:
         specifier: 0.5.3
         version: 0.5.3
 
+  packages/pi-envguard: {}
+
 packages:
 
   '@anthropic-ai/sdk@0.91.1':

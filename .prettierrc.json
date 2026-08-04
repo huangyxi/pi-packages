@@ -16,12 +16,6 @@
 	"multilineArraysWrapThreshold": 3,
 	"overrides": [
 		{
-			"files": ["*.scss"],
-			"options": {
-				"singleQuote": false
-			}
-		},
-		{
 			"files": ["*.md", "*.yaml", "*.yml"],
 			"options": {
 				"useTabs": false,

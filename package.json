@@ -21,7 +21,8 @@
 		"format": "run-s format:*",
 		"format:eslint": "eslint . --fix --ignore-pattern 'packages/**'",
 		"format:prettier": "prettier --write --list-different .",
-		"format:packages": "pnpm -r --if-present run format"
+		"format:packages": "pnpm -r --if-present run format",
+		"publish:package": "node scripts/publish.ts"
 	},
 	"devDependencies": {
 		"@earendil-works/pi-coding-agent": "^0.83.0",

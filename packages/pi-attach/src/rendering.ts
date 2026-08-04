@@ -23,7 +23,7 @@ export function renderContext(
 			].join(' ');
 			return `<attachment ${attributes}>\n${escape(attachment.preview)}${attachment.truncated ? '\n(TRUNCATED)' : ''}\n</attachment>`;
 		})
-		.join('\n');
+		.join('\n\n');
 	const warningText = warningsForModel.length ? `\n<warnings>${escape(warningsForModel.join('; '))}</warnings>` : '';
-	return `<attachments>\n${ATTACHMENTS_NOTICE}\n${body}${warningText}\n</attachments>`;
+	return `<attachments>\n${ATTACHMENTS_NOTICE}\n\n${body}${warningText}\n\n</attachments>`;
 }

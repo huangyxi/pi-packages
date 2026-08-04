@@ -1,20 +1,20 @@
 {
-	"name": "@hyxi/pi-attach",
+	"name": "@hyxi/pi-envguard",
 	"version": "0.1.0",
-	"description": "Persistent Pi context from explicit file, URL, and skill attachment mentions",
+	"description": "Best-effort environment filtering and tool-result redaction for Pi",
 	"license": "MIT",
-	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-attach",
+	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-envguard",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/huangyxi/pi-packages.git",
-		"directory": "packages/pi-attach"
+		"directory": "packages/pi-envguard"
 	},
 	"keywords": [
 		"pi-package",
 		"pi-extension",
-		"attachments",
-		"markdown",
-		"context"
+		"security",
+		"redaction",
+		"environment"
 	],
 	"type": "module",
 	"pi": {
@@ -39,8 +39,5 @@
 		"format:eslint": "eslint . --fix",
 		"format:prettier": "prettier --write --list-different .",
 		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
-	},
-	"dependencies": {
-		"markit-ai": "0.5.3"
 	}
 }

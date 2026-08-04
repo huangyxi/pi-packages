@@ -27,12 +27,15 @@ packages/pi-envguard/
 │   ├── PLAN.md
 │   └── adr/
 ├── src/
+│   ├── bypass.ts
 │   ├── config.ts
 │   ├── directives.ts
 │   ├── environment.ts
 │   ├── extension.ts
 │   ├── redaction.ts
-│   └── shell.ts
+│   ├── runtime.ts
+│   ├── shell.ts
+│   └── tool-guard.ts
 └── test/
     ├── config.test.ts
     ├── directives.test.ts
@@ -41,7 +44,7 @@ packages/pi-envguard/
     └── shell.test.ts
 ```
 
-Build one ESM extension entry with Vite, target Node 24, and expose `dist/extension.js` through the package's `pi.extensions`, `main`, and `exports` fields. Use the repository banner helper and existing lint, typecheck, test, build, and smoke script conventions.
+Build one ESM extension entry with Vite, target Node 24, and expose `dist/extension.js` through the package's `pi.extensions`, `main`, and `exports` fields. Use the repository `defineExtensionConfig` helper so the root `@` alias, ESM library build, Node externals, and package banner remain shared with `pi-attach`; package configs declare only additional entries and package-specific externals. Follow the existing lint, typecheck, test, build, and smoke script conventions.
 
 ## Configuration
 
@@ -161,7 +164,7 @@ A blocked non-steering interactive/RPC input clears the previous bypass but cann
 
 ## Shared Config Reader
 
-Deepen `src/utils/config.ts` with a reusable schema-bound reader while preserving the existing stateless functions for compatibility:
+Deepen `src/utils/config.ts` with a reusable schema-bound reader and delete the former stateless readers once callers migrate. Tests exercise the production reader rather than retaining compatibility wrappers used only by Vitest:
 
 ```ts
 const reader = createConfigReader(schema);
@@ -321,7 +324,14 @@ This propagation is advisory, not authenticated. An LLM-requested shell process 
 
 ## Runtime State
 
-Keep extension-instance state explicit:
+Keep extension-instance state explicit and divide runtime ownership by responsibility:
+
+- `extension.ts` constructs one runtime and registers Pi event hooks;
+- `runtime.ts` owns resolved configuration, compiled rules, and input/session lifecycle;
+- `bypass.ts` owns active bypass, inherited-child initialization, status, and process-marker ownership; and
+- `tool-guard.ts` owns the per-call records and all Bash/result interception.
+
+The tool guard retains this call record shape:
 
 ```ts
 interface ToolCallRecord {
@@ -363,7 +373,7 @@ Modify `src/utils/config.ts` and its tests to add:
 4. issue collection/replay suitable for caller-selected fatal behavior; and
 5. cross-field validation groups.
 
-Keep existing `readConfig` and `readGlobalConfig` behavior source-compatible. Migrate `pi-attach` to the cached reader separately and preserve its user-visible fallback/reporting behavior. Do not touch unrelated current changes in `packages/pi-attach`.
+Delete the former `readConfig` and `readGlobalConfig` wrappers after migrating callers; test compatibility behavior through `createConfigReader` instead of retaining production code or exports used only by Vitest. Migrate `pi-attach` to the cached reader separately and preserve its user-visible fallback/reporting behavior. Do not touch unrelated current changes in `packages/pi-attach`.
 
 ## Test Plan
 

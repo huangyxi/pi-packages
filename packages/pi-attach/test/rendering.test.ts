@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { truncateCodePoints } from '../../src/processing/preview';
-import { renderContext } from '../../src/rendering';
+import { createPreview } from '../src/processing/preview';
+import { renderContext } from '../src/rendering';
 
 describe('rendering', () => {
 	it('escapes document-controlled delimiters', () => {
@@ -20,7 +20,7 @@ describe('rendering', () => {
 		expect(output).toContain('&lt;/attachment&gt;');
 	});
 	it('never splits surrogate pairs', () => {
-		expect(truncateCodePoints('a😀b', 2)).toEqual({
+		expect(createPreview('a😀b', 2)).toEqual({
 			value: 'a😀',
 			truncated: true,
 		});

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { ResolverRegistry } from '../../src/resolvers/resolver-registry';
-import { registerUrlResolver } from '../../src/resolvers/url-resolver';
-import type { MentionCandidate } from '../../src/types';
+import { ResolverRegistry } from '../src/resolvers/resolver-registry';
+import { registerUrlResolver } from '../src/resolvers/url-resolver';
+import type { MentionCandidate } from '../src/types';
 
 function candidate(value: string): MentionCandidate {
 	return { raw: `@${value}`, value, start: 0, end: value.length + 1 };

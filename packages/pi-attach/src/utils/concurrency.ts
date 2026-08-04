@@ -4,6 +4,7 @@ export async function mapConcurrent<Input, Output>(
 	map: (item: Input, index: number) => Promise<Output>,
 ): Promise<Output[]> {
 	const output = new Array<Output>(items.length);
+	// Workers claim indices synchronously, preserving input order without a shared queue.
 	let next = 0;
 	await Promise.all(
 		Array.from({ length: Math.min(concurrency, items.length) }, async () => {

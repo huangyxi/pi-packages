@@ -34,6 +34,7 @@ export default defineConfig(
 			},
 		},
 		rules: {
+			'@typescript-eslint/explicit-member-accessibility': 'error',
 			'simple-import-sort/imports': 'error',
 			'simple-import-sort/exports': 'error',
 		},

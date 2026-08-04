@@ -3,9 +3,5 @@ import packageMetadata from './package.json' with { type: 'json' };
 
 export default defineExtensionConfig({
 	packageMetadata,
-	entries: {
-		extension: 'src/extension.ts',
-		'markit-worker': 'src/markit-worker.ts',
-	},
-	externalDependencies: ['markit-ai'],
+	externalDependencies: ['@earendil-works/pi-coding-agent'],
 });

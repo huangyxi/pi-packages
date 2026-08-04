@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import attach from '../../src/extension';
+import attach from '../src/extension';
 
 interface TestContext {
 	cwd: string;

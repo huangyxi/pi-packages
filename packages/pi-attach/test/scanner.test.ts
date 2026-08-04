@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { scanMentions } from '../../src/scanner';
+import { scanMentions } from '../src/scanner';
 
 describe('scanMentions', () => {
 	it('recognizes bounded mentions and selectors', () => {

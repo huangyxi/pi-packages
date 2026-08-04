@@ -15,6 +15,7 @@ export async function processText(
 	const content = new TextDecoder('utf-8', { fatal: true }).decode(source);
 	const lines = content.split(/\r?\n/);
 	const selection = selectContext(content, candidates);
+	// Explicit selectors may bypass the configured preview budget, but hard safety caps still apply.
 	const explicit = selection.ranges !== undefined;
 	const budget = explicit && !config.limitExplicitLines ? Number.POSITIVE_INFINITY : config.perAttachLength;
 	const preview = createPreview(selection.content, budget);

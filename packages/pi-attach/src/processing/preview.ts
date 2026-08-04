@@ -1,8 +1,9 @@
 import type { MentionCandidate } from '../types';
 
-export const MAX_INJECTED_BYTES = 50 * 1024;
-export const MAX_INJECTED_LINES = 2_000;
+const MAX_INJECTED_BYTES = 50 * 1024;
+const MAX_INJECTED_LINES = 2_000;
 
+/** Uses strict UTF-8 plus a small control-character allowance to reject binary input. */
 export function isText(bytes: Uint8Array): boolean {
 	if (bytes.includes(0)) return false;
 	try {
@@ -17,7 +18,7 @@ export function isText(bytes: Uint8Array): boolean {
 	}
 }
 
-export function truncateCodePoints(value: string, length: number): { value: string; truncated: boolean } {
+function truncateCodePoints(value: string, length: number): { value: string; truncated: boolean } {
 	const points = Array.from(value);
 	return points.length > length
 		? { value: points.slice(0, length).join(''), truncated: true }
@@ -37,7 +38,8 @@ function truncateBytes(value: string, maximum: number): string {
 	return points.slice(0, low).join('');
 }
 
-export function enforceHardLimits(value: string): {
+/** Enforces non-configurable safety caps after the user-configured preview limit. */
+function enforceHardLimits(value: string): {
 	value: string;
 	truncated: boolean;
 } {
@@ -47,7 +49,8 @@ export function enforceHardLimits(value: string): {
 	return { value: lineLimited, truncated: lineLimited !== value };
 }
 
-export function mergeRanges(
+/** Combines overlapping selectors so repeated mentions do not duplicate source lines. */
+function mergeRanges(
 	candidates: readonly MentionCandidate[],
 	lineCount: number,
 ): { ranges?: [number, number][]; warningForModel?: string } {

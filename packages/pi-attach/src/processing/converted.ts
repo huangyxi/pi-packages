@@ -18,6 +18,7 @@ export async function processConverted(
 	]);
 	const lines = parsed.text.split(/\r?\n/);
 	const selection = selectContext(parsed.text, candidates);
+	// Explicit selectors may bypass the configured preview budget, but hard safety caps still apply.
 	const limit =
 		selection.ranges !== undefined && !config.limitExplicitLines
 			? Number.POSITIVE_INFINITY

@@ -3,6 +3,7 @@ import type { MentionCandidate } from './types';
 const isWhitespace = (value: string | undefined) => value === undefined || /\s/.test(value);
 const isName = (value: string) => /[^\s@]/.test(value);
 
+/** Skips spans where `@` has language-level meaning rather than attachment syntax. */
 function protectedEnd(text: string, start: number): number | undefined {
 	const rest = text.slice(start);
 	const fence = /^(?:`{3,}|~{3,})/.exec(rest)?.[0];

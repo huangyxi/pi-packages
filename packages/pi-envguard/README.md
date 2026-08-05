@@ -4,7 +4,7 @@ Pi Envguard reduces accidental disclosure of selected process-environment values
 
 It is not a sandbox. Read the [security boundary](#security-boundary) before relying on it.
 
-## Install
+## Installation
 
 ```sh
 pi install npm:@hyxi/pi-envguard

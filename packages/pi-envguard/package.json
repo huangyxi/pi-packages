@@ -1,7 +1,7 @@
 {
 	"name": "@hyxi/pi-envguard",
 	"version": "0.1.0",
-	"description": "Best-effort environment filtering and tool-result redaction for Pi",
+	"description": "Environment filtering and tool-result redaction for Pi",
 	"license": "MIT",
 	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-envguard",
 	"repository": {

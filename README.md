@@ -2,7 +2,7 @@
 
 Pi extensions and related packages maintained in this workspace.
 
-## Install
+## Installation
 
 Install a published package with Pi's package manager. For example:
 
@@ -14,6 +14,7 @@ Pi installs packages globally by default. Add `-l` to install into the current p
 
 ## Packages
 
-| Package                               | Installation                     | Description                                                                                                        |
-| ------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [@hyxi/pi-attach](packages/pi-attach) | `pi install npm:@hyxi/pi-attach` | Adds persistent, bounded context from explicit file, URL, and skill mentions without rewriting the user's message. |
+| Package                                   | Installation                       | Description                                                     |
+| ----------------------------------------- | ---------------------------------- | --------------------------------------------------------------- |
+| [@hyxi/pi-attach](packages/pi-attach)     | `pi install npm:@hyxi/pi-attach`   | Bounded context from explicit file and URL attachment mentions. |
+| [@hyxi/pi-envguard](packages/pi-envguard) | `pi install npm:@hyxi/pi-envguard` | Environment filtering and tool-result redaction.                |

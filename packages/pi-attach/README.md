@@ -26,39 +26,38 @@ Configure globally in `~/.pi/agent/extensions/attach.json` or, for trusted proje
 | ------------------------------------ | ---------------- | ----------: | -------------------------------------------------------------------- |
 | `perAttachLength`                    | integer >= 0     |       `500` | Maximum Unicode code points in each ordinary attachment preview.     |
 | `attachmentProcessingTimeoutSeconds` | number >= 0      |        `30` | Deadline for processing one input; `0` disables the deadline.        |
-| `limitExplicitLines`                 | boolean          |     `false` | Apply `perAttachLength` to explicit `#L...` selections.              |
+| `limitExplicitLines`                 | boolean          |     `false` | Apply `perAttachLength` to explicit line selections.                 |
 | `maxAttachmentConcurrency`           | integer > 0      |         `4` | Maximum number of file or URL attachments processed concurrently.    |
 | `temporaryDirectory`                 | non-empty string | OS temp dir | Base directory for private per-conversion `pi-attach-*` directories. |
 
 ## Mentions
 
-| Form               | Example                        | Resolves to                                                       |
-| ------------------ | ------------------------------ | ----------------------------------------------------------------- |
-| Relative file      | `@src/index.ts`                | A file relative to Pi's current working directory                 |
-| Absolute file      | `@/tmp/report.txt`             | An absolute local file                                            |
-| Home-relative file | `@~/notes/todo.md`             | A file relative to the current user's home directory              |
-| Quoted file        | `@"docs/project plan.md"`      | A path containing whitespace                                      |
-| Document           | `@reports/annual.pdf`          | A supported document converted locally to Markdown with Markit    |
-| URL                | `@https://example.com/article` | HTTP(S) content negotiated or converted to Markdown with Markit   |
-| Single line        | `@src/index.ts#L12`            | One line from text or converted Markdown                          |
-| Line range         | `@src/index.ts#L12-24`         | An inclusive line range                                           |
-| Skill              | `@typescript`                  | The body and location of the available `skill:typescript` command |
+| Form               | Example                                         | Resolves to                                                       |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------------------------- |
+| Relative file      | `@src/index.ts`                                 | A file relative to Pi's current working directory                 |
+| Absolute file      | `@/tmp/report.txt`                              | An absolute local file                                            |
+| Home-relative file | `@~/notes/todo.md`                              | A file relative to the current user's home directory              |
+| Quoted file        | `@"docs/project plan.md"`                       | A path containing whitespace                                      |
+| Document           | `@reports/annual.pdf`                           | A supported document converted locally to Markdown                |
+| URL                | `@https://example.com/article`                  | HTTP(S) content negotiated or converted to Markdown               |
+| Single line        | `@src/index.ts:12` or `@src/index.ts#L12`       | One line from text or converted Markdown                          |
+| Line range         | `@src/index.ts:12-24` or `@src/index.ts#L12-24` | An inclusive line range                                           |
+| Skill              | `@typescript`                                   | The body and location of the available `skill:typescript` command |
 
 A mention must begin at the start of the input or after whitespace. Embedded mentions such as `name@example.com` are ignored, as are mentions inside quoted strings, inline or fenced code, dollar-delimited math, and `\(...\)` or `\[...\]` math. Only mentions that resolve successfully become attachments.
 
 ## Supported File Formats
 
-Markit converts supported document and data files to Markdown locally. Image descriptions and audio transcription are not enabled by this extension, so those formats provide the metadata Markit can extract without an LLM.
+Markit converts supported documents, images, audio, and archives to Markdown locally. Image and audio attachments include the metadata available without an LLM.
 
-| Category       | Supported extensions                                                      |
-| -------------- | ------------------------------------------------------------------------- |
-| Documents      | `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.htm`, `.epub`, `.ipynb`     |
-| Data and feeds | `.csv`, `.tsv`, `.json`, `.yaml`, `.yml`, `.xml`, `.svg`, `.rss`, `.atom` |
-| Images         | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`                                  |
-| Audio          | `.mp3`, `.wav`, `.m4a`, `.flac`                                           |
-| Archives       | `.zip`                                                                    |
+| Category  | Supported extensions                       |
+| --------- | ------------------------------------------ |
+| Documents | `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.epub` |
+| Images    | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`   |
+| Audio     | `.mp3`, `.wav`, `.m4a`, `.flac`            |
+| Archives  | `.zip`                                     |
 
-Ordinary UTF-8 text and source code remain source-accurate instead of being wrapped or reformatted, preserving useful `#L...` semantics.
+UTF-8 text and source code are read directly with source-accurate content and support `:1` and `#L1` line selectors.
 
 ## URL Processing
 

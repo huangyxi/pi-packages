@@ -35,14 +35,15 @@ async function resolveMentions(
 			continue;
 		}
 		if (resolution?.kind !== 'file' && resolution?.kind !== 'url') continue;
+		const resolvedCandidate = resolution.candidate;
 		const value = resolution.kind === 'file' ? resolution.path : resolution.url;
 		const key = `${resolution.kind}:${value}`;
 		const existing = sources.get(key);
-		if (existing) existing.mentions.push(candidate);
+		if (existing) existing.mentions.push(resolvedCandidate);
 		else
 			sources.set(key, {
 				source: { kind: resolution.kind, value },
-				mentions: [candidate],
+				mentions: [resolvedCandidate],
 				firstMention: index,
 			});
 	}

@@ -9,6 +9,7 @@ export interface MentionCandidate {
 	start: number;
 	end: number;
 	selector?: LineRange;
+	selectorDelimiter?: ':' | '#L';
 }
 
 export interface ProcessedAttachment {

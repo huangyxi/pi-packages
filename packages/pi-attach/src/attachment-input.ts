@@ -7,7 +7,7 @@ import { processSourceGroups } from './processing/process-file-groups';
 import { renderContext } from './rendering';
 import type { ResolverRegistry } from './resolvers/resolver-registry';
 import { scanMentions } from './scanner';
-import type { AttachmentInputResult, CompletedAttachment, MentionCandidate, SourceGroup } from './types';
+import type { AttachmentInputResult, MentionCandidate, SourceGroup } from './types';
 
 const workerPath = fileURLToPath(import.meta.resolve('./markit-worker.js'));
 const configReader = createConfigReader(ATTACH_CONFIG_SCHEMA, {
@@ -20,20 +20,11 @@ async function resolveMentions(
 	candidates: readonly MentionCandidate[],
 	cwd: string,
 	registry: ResolverRegistry,
-): Promise<{ sources: SourceGroup[]; completed: CompletedAttachment[] }> {
+): Promise<{ sources: SourceGroup[] }> {
 	const sources = new Map<string, SourceGroup>();
-	const completed: CompletedAttachment[] = [];
 
 	for (const [index, candidate] of candidates.entries()) {
 		const resolution = await registry.resolve(candidate, { cwd });
-		if (resolution?.kind === 'content') {
-			completed.push({
-				attachment: resolution.attachment,
-				mentions: [candidate],
-				firstMention: index,
-			});
-			continue;
-		}
 		if (resolution?.kind !== 'file' && resolution?.kind !== 'url') continue;
 		const resolvedCandidate = resolution.candidate;
 		const value = resolution.kind === 'file' ? resolution.path : resolution.url;
@@ -48,7 +39,7 @@ async function resolveMentions(
 			});
 	}
 
-	return { sources: [...sources.values()], completed };
+	return { sources: [...sources.values()] };
 }
 
 export async function processAttachmentInput(
@@ -66,8 +57,7 @@ export async function processAttachmentInput(
 		? AbortSignal.timeout(config.attachmentProcessingTimeoutSeconds * 1000)
 		: new AbortController().signal;
 	const resolved = await resolveMentions(candidates, cwd, registry);
-	const processed = await processSourceGroups(resolved.sources, config, workerPath, signal, reportIssue);
-	const completed = [...resolved.completed, ...processed].sort(
+	const completed = (await processSourceGroups(resolved.sources, config, workerPath, signal, reportIssue)).sort(
 		(left, right) => left.firstMention - right.firstMention,
 	);
 	const details = completed.map(({ attachment }) => attachment);

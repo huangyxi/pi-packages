@@ -20,8 +20,10 @@ export interface ProcessedAttachment {
 	contentLines: number;
 	requestedLines?: string;
 	parsedPath?: string;
+	readPath?: string;
 	preview: string;
 	truncated: boolean;
+	truncatedBy?: 'lines' | 'bytes';
 	warningForModel?: string;
 }
 
@@ -38,11 +40,6 @@ export type Resolution =
 	| {
 			kind: 'url';
 			url: string;
-			candidate: MentionCandidate;
-	  }
-	| {
-			kind: 'content';
-			attachment: ProcessedAttachment;
 			candidate: MentionCandidate;
 	  };
 

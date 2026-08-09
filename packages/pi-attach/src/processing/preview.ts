@@ -1,7 +1,11 @@
-import type { MentionCandidate } from '../types';
+import {
+	DEFAULT_MAX_BYTES,
+	DEFAULT_MAX_LINES,
+	truncateHead,
+	type TruncationResult,
+} from '@earendil-works/pi-coding-agent';
 
-const MAX_INJECTED_BYTES = 50 * 1024;
-const MAX_INJECTED_LINES = 2_000;
+import type { MentionCandidate } from '../types';
 
 /** Uses strict UTF-8 plus a small control-character allowance to reject binary input. */
 export function isText(bytes: Uint8Array): boolean {
@@ -25,28 +29,49 @@ function truncateCodePoints(value: string, length: number): { value: string; tru
 		: { value, truncated: false };
 }
 
-function truncateBytes(value: string, maximum: number): string {
-	if (Buffer.byteLength(value) <= maximum) return value;
-	const points = Array.from(value);
-	let low = 0;
-	let high = points.length;
-	while (low < high) {
-		const middle = Math.ceil((low + high) / 2);
-		if (Buffer.byteLength(points.slice(0, middle).join('')) <= maximum) low = middle;
-		else high = middle - 1;
-	}
-	return points.slice(0, low).join('');
-}
-
-/** Enforces non-configurable safety caps after the user-configured preview limit. */
-function enforceHardLimits(value: string): {
+export interface PreviewResult {
 	value: string;
 	truncated: boolean;
-} {
-	const byteLimited = truncateBytes(value, MAX_INJECTED_BYTES);
-	const lines = byteLimited.split('\n');
-	const lineLimited = lines.length > MAX_INJECTED_LINES ? lines.slice(0, MAX_INJECTED_LINES).join('\n') : byteLimited;
-	return { value: lineLimited, truncated: lineLimited !== value };
+	truncatedBy?: TruncationResult['truncatedBy'];
+	firstLineExceedsLimit?: boolean;
+}
+
+/** Applies Pi Attach's recurring-context budget to an unselected source. */
+export function applyPreviewBudget(content: string, limit: number): PreviewResult {
+	const result = truncateCodePoints(content, limit);
+	return { value: result.value, truncated: result.truncated };
+}
+
+/** Applies the recurring-context budget only when no line selector was supplied. */
+export function applyPreviewBudgetIfUnselected(content: string, selected: boolean, limit: number): PreviewResult {
+	return selected ? { value: content, truncated: false } : applyPreviewBudget(content, limit);
+}
+
+/** Applies Pi's unconditional line and byte caps without splitting a line. */
+export function applyHardCap(content: string): PreviewResult {
+	const result = truncateHead(content, { maxLines: DEFAULT_MAX_LINES, maxBytes: DEFAULT_MAX_BYTES });
+	return {
+		value: result.content,
+		truncated: result.truncated,
+		...(result.truncated ? { truncatedBy: result.truncatedBy } : {}),
+		...(result.firstLineExceedsLimit ? { firstLineExceedsLimit: true } : {}),
+	};
+}
+
+export function combinePreviewWarnings(
+	selectionWarning: string | undefined,
+	hardCap: PreviewResult,
+): string | undefined {
+	return (
+		[
+			selectionWarning,
+			hardCap.firstLineExceedsLimit
+				? "the first line exceeds Pi's hard byte cap, so no preview is available"
+				: undefined,
+		]
+			.filter((warning): warning is string => warning !== undefined)
+			.join('; ') || undefined
+	);
 }
 
 /** Combines overlapping selectors so repeated mentions do not duplicate source lines. */
@@ -88,14 +113,5 @@ export function selectContext(
 			.join('\n--- source-line separator ---\n'),
 		ranges: selection.ranges,
 		...(selection.warningForModel ? { warningForModel: selection.warningForModel } : {}),
-	};
-}
-
-export function createPreview(content: string, limit: number): { value: string; truncated: boolean } {
-	const configured = truncateCodePoints(content, limit);
-	const hard = enforceHardLimits(configured.value);
-	return {
-		value: hard.value,
-		truncated: configured.truncated || hard.truncated,
 	};
 }

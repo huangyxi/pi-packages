@@ -2,7 +2,7 @@ import { readFile, stat } from 'node:fs/promises';
 
 import type { AttachConfig } from '../config';
 import type { MentionCandidate, ProcessedAttachment } from '../types';
-import { createPreview, isText, selectContext } from './preview';
+import { applyHardCap, applyPreviewBudgetIfUnselected, combinePreviewWarnings, isText, selectContext } from './preview';
 
 export async function processText(
 	path: string,
@@ -15,23 +15,24 @@ export async function processText(
 	const content = new TextDecoder('utf-8', { fatal: true }).decode(source);
 	const lines = content.split(/\r?\n/);
 	const selection = selectContext(content, candidates);
-	// Explicit selectors may bypass the configured preview budget, but hard safety caps still apply.
-	const explicit = selection.ranges !== undefined;
-	const budget = explicit && !config.limitExplicitLines ? Number.POSITIVE_INFINITY : config.perAttachLength;
-	const preview = createPreview(selection.content, budget);
+	const budget = applyPreviewBudgetIfUnselected(
+		selection.content,
+		selection.ranges !== undefined,
+		config.perAttachLength,
+	);
+	const hardCap = applyHardCap(budget.value);
+	const warningForModel = combinePreviewWarnings(selection.warningForModel, hardCap);
 	return {
 		path,
 		mentions: candidates.map((candidate) => candidate.raw),
 		sourceBytes: metadata.size,
 		contentChars: Array.from(content).length,
 		contentLines: lines.length,
-		...(selection.ranges
-			? {
-					requestedLines: selection.ranges.map((range) => range.join('-')).join(','),
-				}
-			: {}),
-		preview: preview.value,
-		truncated: preview.truncated,
-		...(selection.warningForModel ? { warningForModel: selection.warningForModel } : {}),
+		...(selection.ranges ? { requestedLines: selection.ranges.map((range) => range.join('-')).join(',') } : {}),
+		...(selection.ranges === undefined || selection.ranges.length === 1 ? { readPath: path } : {}),
+		preview: hardCap.value,
+		truncated: budget.truncated || hardCap.truncated,
+		...(hardCap.truncatedBy ? { truncatedBy: hardCap.truncatedBy } : {}),
+		...(warningForModel ? { warningForModel } : {}),
 	};
 }

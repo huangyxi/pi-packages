@@ -1,6 +1,6 @@
 # @hyxi/pi-attach
 
-A Pi extension that adds persistent, bounded context from explicit file, URL, and skill attachment mentions without changing the user's original message.
+A Pi extension that adds persistent, bounded context from explicit file and URL attachment mentions without changing the user's original message.
 
 ## Installation
 
@@ -16,7 +16,6 @@ Configure globally in `~/.pi/agent/extensions/attach.json` or, for trusted proje
 {
   "perAttachLength": 1000,
   "attachmentProcessingTimeoutSeconds": 45,
-  "limitExplicitLines": false,
   "maxAttachmentConcurrency": 4,
   "temporaryDirectory": "/tmp"
 }
@@ -26,35 +25,31 @@ Configure globally in `~/.pi/agent/extensions/attach.json` or, for trusted proje
 | ------------------------------------ | ---------------- | ----------: | -------------------------------------------------------------------- |
 | `perAttachLength`                    | integer >= 0     |       `500` | Maximum Unicode code points in each ordinary attachment preview.     |
 | `attachmentProcessingTimeoutSeconds` | number >= 0      |        `30` | Deadline for processing one input; `0` disables the deadline.        |
-| `limitExplicitLines`                 | boolean          |     `false` | Apply `perAttachLength` to explicit line selections.                 |
 | `maxAttachmentConcurrency`           | integer > 0      |         `4` | Maximum number of file or URL attachments processed concurrently.    |
 | `temporaryDirectory`                 | non-empty string | OS temp dir | Base directory for private per-conversion `pi-attach-*` directories. |
 
 ## Mentions
 
-| Form               | Example                                         | Resolves to                                                       |
-| ------------------ | ----------------------------------------------- | ----------------------------------------------------------------- |
-| Relative file      | `@src/index.ts`                                 | A file relative to Pi's current working directory                 |
-| Absolute file      | `@/tmp/report.txt`                              | An absolute local file                                            |
-| Home-relative file | `@~/notes/todo.md`                              | A file relative to the current user's home directory              |
-| Quoted file        | `@"docs/project plan.md"`                       | A path containing whitespace                                      |
-| Document           | `@reports/annual.pdf`                           | A supported document converted locally to Markdown                |
-| URL                | `@https://example.com/article`                  | HTTP(S) content negotiated or converted to Markdown               |
-| Single line        | `@src/index.ts:12` or `@src/index.ts#L12`       | One line from text or converted Markdown                          |
-| Line range         | `@src/index.ts:12-24` or `@src/index.ts#L12-24` | An inclusive line range                                           |
-| Skill              | `@typescript`                                   | The body and location of the available `skill:typescript` command |
+| Form               | Example                                         | Resolves to                                          |
+| ------------------ | ----------------------------------------------- | ---------------------------------------------------- |
+| Relative file      | `@src/index.ts`                                 | A file relative to Pi's current working directory    |
+| Absolute file      | `@/tmp/report.txt`                              | An absolute local file                               |
+| Home-relative file | `@~/notes/todo.md`                              | A file relative to the current user's home directory |
+| Quoted file        | `@"docs/project plan.md"`                       | A path containing whitespace                         |
+| Document           | `@reports/annual.pdf`                           | A supported document converted locally to Markdown   |
+| URL                | `@https://example.com/article`                  | HTTP(S) content negotiated or converted to Markdown  |
+| Single line        | `@src/index.ts:12` or `@src/index.ts#L12`       | One line from text or converted Markdown             |
+| Line range         | `@src/index.ts:12-24` or `@src/index.ts#L12-24` | An inclusive line range                              |
 
 A mention must begin at the start of the input or after whitespace. Embedded mentions such as `name@example.com` are ignored, as are mentions inside quoted strings, inline or fenced code, dollar-delimited math, and `\(...\)` or `\[...\]` math. Only mentions that resolve successfully become attachments.
 
 ## Supported File Formats
 
-Markit converts supported documents, images, audio, and archives to Markdown locally. Image and audio attachments include the metadata available without an LLM.
+Markit converts supported documents and archives to Markdown locally.
 
 | Category  | Supported extensions                       |
 | --------- | ------------------------------------------ |
 | Documents | `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.epub` |
-| Images    | `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`   |
-| Audio     | `.mp3`, `.wav`, `.m4a`, `.flac`            |
 | Archives  | `.zip`                                     |
 
 UTF-8 text and source code are read directly with source-accurate content and support `:1` and `#L1` line selectors.
@@ -67,6 +62,6 @@ URL mentions perform network requests and may follow redirects. Attach only URLs
 
 ## How It Works
 
-On each user input, the extension scans for supported mentions, resolves files, URLs, and skills, reads ordinary text directly, and sends convertible sources to a cancellable Markit child process. Generated Markdown is saved to a private temporary `parsed.md` file, then bounded and rendered into a persistent Pi custom message with `customType: "attach-context"` before the agent starts. The extension returns `action: "continue"`, so the original text and images remain unchanged.
+On each user input, the extension scans for supported mentions, resolves files and URLs, reads ordinary text directly, and sends convertible sources to a cancellable Markit child process. Generated Markdown is saved to a private temporary `parsed.md` file, then bounded and rendered into one persistent Pi custom message with `customType: "attach-context"` before the agent starts. The original text remains unchanged.
 
 Extracted content is treated as untrusted text rather than a faithful rendering or system instruction.

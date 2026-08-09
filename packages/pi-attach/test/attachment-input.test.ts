@@ -97,4 +97,16 @@ describe('attachment warning channels', () => {
 		expect(result?.details[0]).toMatchObject({ path: literalPath, preview: 'literal filename' });
 		expect(result?.details[0]?.requestedLines).toBeUndefined();
 	});
+
+	it("warns when a single source line exceeds Pi's byte cap", async () => {
+		const cwd = await temporaryDirectory();
+		await writeFile(join(cwd, 'bundle.js'), 'x'.repeat(50 * 1024 + 1));
+		const registry = new ResolverRegistry();
+		registerFileResolver(registry);
+
+		const result = await processAttachmentInput('@bundle.js:1', cwd, false, registry, vi.fn());
+
+		expect(result?.content).toContain("first line exceeds Pi's hard byte cap");
+		expect(result?.details[0]).toMatchObject({ preview: '', truncated: true });
+	});
 });

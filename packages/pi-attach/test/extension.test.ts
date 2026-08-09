@@ -21,6 +21,7 @@ type BeforeAgentStartHandler = (
 	| {
 			message: {
 				customType: string;
+				content: string;
 				details: { path: string }[];
 			};
 	  }
@@ -38,10 +39,17 @@ describe('attach extension', () => {
 		const cwd = await mkdtemp(join(tmpdir(), 'pi-attach-extension-test-'));
 		temporaryDirectories.push(cwd);
 		await writeFile(join(cwd, 'source.txt'), 'attachment content');
+		const activeTools = ['read'];
 		const handlers = new Map<string, unknown>();
 		const pi = {
 			on(name: string, handler: unknown) {
 				handlers.set(name, handler);
+			},
+			getActiveTools() {
+				return activeTools;
+			},
+			getAllTools() {
+				return activeTools.includes('read') ? [{ name: 'read', sourceInfo: { source: 'builtin' } }] : [];
 			},
 			getCommands() {
 				return [];
@@ -50,21 +58,17 @@ describe('attach extension', () => {
 		attach(pi);
 		const beforeAgentStart = handlers.get('before_agent_start') as BeforeAgentStartHandler;
 
-		await expect(
-			beforeAgentStart(
-				{ prompt: '@source.txt summarize' },
-				{
-					cwd,
-					hasUI: false,
-					isProjectTrusted: () => true,
-					ui: { notify: () => undefined },
-				},
-			),
-		).resolves.toMatchObject({
-			message: {
-				customType: 'attach-context',
-				details: [{ path: join(cwd, 'source.txt') }],
+		const result = await beforeAgentStart(
+			{ prompt: '@source.txt summarize' },
+			{
+				cwd,
+				hasUI: false,
+				isProjectTrusted: () => true,
+				ui: { notify: () => undefined },
 			},
-		});
+		);
+
+		expect(result?.message.details).toMatchObject([{ path: join(cwd, 'source.txt') }]);
+		expect(result?.message.content).toContain('attachment content');
 	});
 });

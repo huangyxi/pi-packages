@@ -25,15 +25,15 @@
 		"publish:package": "node scripts/publish.ts"
 	},
 	"devDependencies": {
-		"@earendil-works/pi-coding-agent": "^0.83.0",
-		"@types/node": "^24.13.3",
+		"@earendil-works/pi-coding-agent": "^0.84.0",
+		"@types/node": "^26.1.2",
 		"eslint": "^10.8.0",
 		"eslint-plugin-simple-import-sort": "^14.0.0",
-		"npm-run-all2": "^9.0.2",
+		"npm-run-all2": "^9.0.3",
 		"prettier": "^3.9.6",
 		"prettier-plugin-multiline-arrays": "^4.1.11",
-		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.1",
+		"typescript": "^7.0.2",
+		"typescript-eslint": "^8.66.0",
 		"vite": "^8.2.0",
 		"vite-plugin-banner": "^0.8.1",
 		"vitest": "^4.1.10"

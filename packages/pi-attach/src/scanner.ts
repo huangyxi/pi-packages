@@ -35,16 +35,16 @@ function protectedEnd(text: string, start: number): number | undefined {
 	return undefined;
 }
 
-function parseValue(raw: string): Pick<MentionCandidate, 'value' | 'selector'> | undefined {
+function parseValue(raw: string): Pick<MentionCandidate, 'value' | 'selector' | 'selectorDelimiter'> | undefined {
 	if (/^https?:\/\//i.test(raw)) return { value: raw };
-	const match = /^(.*?)(?:#L(\d+)(?:-(\d+))?)?$/.exec(raw);
+	const match = /^(.*?)(?:(#L|:)(\d+)(?:-(\d+))?)?$/.exec(raw);
 	if (!match?.[1]) return undefined;
-	if (raw.includes('#') && !match[2]) return undefined;
-	const start = match[2] === undefined ? undefined : Number(match[2]);
+	if (raw.includes('#') && match[2] !== '#L') return undefined;
+	const start = match[3] === undefined ? undefined : Number(match[3]);
 	if (start === undefined) return { value: match[1] };
-	const end = match[3] === undefined ? start : Number(match[3]);
+	const end = match[4] === undefined ? start : Number(match[4]);
 	if (start < 1 || end < start) return undefined;
-	return { value: match[1], selector: { start, end } };
+	return { value: match[1], selector: { start, end }, selectorDelimiter: match[2] as ':' | '#L' };
 }
 
 /** Deterministic lexer that returns source spans without altering input. */

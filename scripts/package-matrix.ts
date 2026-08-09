@@ -61,12 +61,19 @@ if (requestedPackage) {
 } else if (process.argv[2] === 'changed') {
 	const base = process.env.BASE_SHA;
 	if (base && !/^0+$/.test(base)) {
+		let diffBase = base;
+		try {
+			execFileSync('git', ['cat-file', '-e', `${base}^{commit}`], { stdio: 'ignore' });
+		} catch {
+			// A force-pushed branch can leave github.event.before unreachable.
+			diffBase = 'HEAD^';
+		}
 		const changed = execFileSync(
 			'git',
 			[
 				'diff',
 				'--name-only',
-				base,
+				diffBase,
 				'HEAD',
 			],
 			{

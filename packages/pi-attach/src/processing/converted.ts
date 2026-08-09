@@ -3,7 +3,7 @@ import { stat } from 'node:fs/promises';
 import type { AttachConfig } from '../config';
 import type { AttachmentSource, MentionCandidate, ProcessedAttachment } from '../types';
 import { convertWithMarkit } from './markit';
-import { createPreview, selectContext } from './preview';
+import { applyHardCap, applyPreviewBudgetIfUnselected, combinePreviewWarnings, selectContext } from './preview';
 
 export async function processConverted(
 	source: AttachmentSource,
@@ -18,26 +18,27 @@ export async function processConverted(
 	]);
 	const lines = parsed.text.split(/\r?\n/);
 	const selection = selectContext(parsed.text, candidates);
-	// Explicit selectors may bypass the configured preview budget, but hard safety caps still apply.
-	const limit =
-		selection.ranges !== undefined && !config.limitExplicitLines
-			? Number.POSITIVE_INFINITY
-			: config.perAttachLength;
-	const preview = createPreview(selection.content, limit);
+	const budget = applyPreviewBudgetIfUnselected(
+		selection.content,
+		selection.ranges !== undefined,
+		config.perAttachLength,
+	);
+	const hardCap = applyHardCap(budget.value);
+	const warningForModel = combinePreviewWarnings(selection.warningForModel, hardCap);
 	return {
 		path: source.value,
 		mentions: candidates.map((candidate) => candidate.raw),
 		...(metadata ? { sourceBytes: metadata.size } : {}),
 		contentChars: Array.from(parsed.text).length,
 		contentLines: lines.length,
-		...(selection.ranges
-			? {
-					requestedLines: selection.ranges.map((range) => range.join('-')).join(','),
-				}
+		...(selection.ranges ? { requestedLines: selection.ranges.map((range) => range.join('-')).join(',') } : {}),
+		...(parsed.parsedPath && (selection.ranges === undefined || selection.ranges.length === 1)
+			? { readPath: parsed.parsedPath }
 			: {}),
 		parsedPath: parsed.parsedPath,
-		preview: preview.value,
-		truncated: preview.truncated,
-		...(selection.warningForModel ? { warningForModel: selection.warningForModel } : {}),
+		preview: hardCap.value,
+		truncated: budget.truncated || hardCap.truncated,
+		...(hardCap.truncatedBy ? { truncatedBy: hardCap.truncatedBy } : {}),
+		...(warningForModel ? { warningForModel } : {}),
 	};
 }

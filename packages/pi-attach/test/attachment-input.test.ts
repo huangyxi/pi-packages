@@ -50,4 +50,63 @@ describe('attachment warning channels', () => {
 		expect(reportIssue).not.toHaveBeenCalled();
 		expect(result?.content).toContain('<warnings>@document.txt#L99: requested lines are out of bounds</warnings>');
 	});
+
+	it('reads text-like files directly and supports both local selector syntaxes', async () => {
+		const cwd = await temporaryDirectory();
+		const files = {
+			'values.csv': 'a,b\n1,2\n',
+			'values.json': '{"a":1}\n',
+			'page.html': '<p>text</p>\n',
+			'notebook.ipynb': '{"cells":[]}\n',
+		};
+		await Promise.all(Object.entries(files).map(([name, content]) => writeFile(join(cwd, name), content)));
+		const registry = new ResolverRegistry();
+		registerFileResolver(registry);
+		const reportIssue = vi.fn();
+
+		const result = await processAttachmentInput(
+			Object.keys(files)
+				.map((name) => `@${name}`)
+				.join(' '),
+			cwd,
+			false,
+			registry,
+			reportIssue,
+		);
+
+		expect(reportIssue).not.toHaveBeenCalled();
+		expect(result?.details).toHaveLength(Object.keys(files).length);
+		expect(result?.details.every(({ parsedPath }) => parsedPath === undefined)).toBe(true);
+
+		const colon = await processAttachmentInput('@values.csv:1-2', cwd, false, registry, reportIssue);
+		expect(colon?.details[0]).toMatchObject({ requestedLines: '1-2', preview: 'a,b\n1,2' });
+
+		const hash = await processAttachmentInput('@values.csv#L2', cwd, false, registry, reportIssue);
+		expect(hash?.details[0]).toMatchObject({ requestedLines: '2-2', preview: '1,2' });
+	});
+
+	it('prefers a literal selector-like filename before selecting lines', async () => {
+		const cwd = await temporaryDirectory();
+		const literalPath = join(cwd, 'abc.txt:12');
+		await writeFile(literalPath, 'literal filename');
+		const registry = new ResolverRegistry();
+		registerFileResolver(registry);
+
+		const result = await processAttachmentInput('@abc.txt:12', cwd, false, registry, vi.fn());
+
+		expect(result?.details[0]).toMatchObject({ path: literalPath, preview: 'literal filename' });
+		expect(result?.details[0]?.requestedLines).toBeUndefined();
+	});
+
+	it("warns when a single source line exceeds Pi's byte cap", async () => {
+		const cwd = await temporaryDirectory();
+		await writeFile(join(cwd, 'bundle.js'), 'x'.repeat(50 * 1024 + 1));
+		const registry = new ResolverRegistry();
+		registerFileResolver(registry);
+
+		const result = await processAttachmentInput('@bundle.js:1', cwd, false, registry, vi.fn());
+
+		expect(result?.content).toContain("first line exceeds Pi's hard byte cap");
+		expect(result?.details[0]).toMatchObject({ preview: '', truncated: true });
+	});
 });

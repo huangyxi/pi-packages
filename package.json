@@ -1,5 +1,5 @@
 {
-	"name": "pi-packages",
+	"description": "Monorepo containing multiple packages for the Pi Coding Agent by @hyxi",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -27,12 +27,13 @@
 	"devDependencies": {
 		"@earendil-works/pi-coding-agent": "^0.83.0",
 		"@types/node": "^24.13.3",
+		"@typescript/native": "npm:typescript@^7.0.2",
 		"eslint": "^10.8.0",
 		"eslint-plugin-simple-import-sort": "^14.0.0",
 		"npm-run-all2": "^9.0.2",
 		"prettier": "^3.9.6",
 		"prettier-plugin-multiline-arrays": "^4.1.11",
-		"typescript": "^6.0.3",
+		"typescript": "npm:@typescript/typescript6@^6.0.2",
 		"typescript-eslint": "^8.61.1",
 		"vite": "^8.2.0",
 		"vite-plugin-banner": "^0.8.1",

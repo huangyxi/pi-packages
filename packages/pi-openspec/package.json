@@ -1,0 +1,47 @@
+{
+	"name": "@hyxi/pi-openspec",
+	"version": "0.1.0",
+	"description": "OpenSpec agent skills and /opsx-* prompt templates for Pi, generated from @fission-ai/openspec at build time",
+	"license": "MIT",
+	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-openspec",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/huangyxi/pi-packages.git",
+		"directory": "packages/pi-openspec"
+	},
+	"keywords": [
+		"pi-package",
+		"openspec",
+		"skills",
+		"prompt-templates"
+	],
+	"type": "module",
+	"pi": {
+		"skills": [
+			"./dist/skills"
+		],
+		"prompts": [
+			"./dist/prompts"
+		]
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "node scripts/generate-assets.ts",
+		"check": "run-s lint typecheck test",
+		"lint": "run-p --continue-on-error lint:*",
+		"lint:eslint": "eslint .",
+		"lint:prettier": "prettier --check .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"format": "run-s format:*",
+		"format:eslint": "eslint . --fix",
+		"format:prettier": "prettier --write --list-different .",
+		"smoke": "node --input-type=module --eval \"const fs = await import('node:fs/promises'); const skillDirs = await fs.readdir('dist/skills'); const skills = await Promise.all(skillDirs.map((d) => fs.readFile('dist/skills/' + d + '/SKILL.md', 'utf8'))); const prompts = (await fs.readdir('dist/prompts')).filter((f) => f.endsWith('.md')); const promptTexts = await Promise.all(prompts.map((f) => fs.readFile('dist/prompts/' + f, 'utf8'))); const frontmatter = (text, key) => text.startsWith('---') && text.split('\\n---')[0].includes(key); const ok = skillDirs.length > 0 && skillDirs.length === prompts.length && prompts.every((f) => /^opsx-[a-z0-9-]+\\.md$/.test(f)) && skills.every((s) => frontmatter(s, 'name: ') && frontmatter(s, 'description: ') && !s.includes('/opsx:')) && promptTexts.every((p) => frontmatter(p, 'description: ') && !p.includes('/opsx:')); if (!ok) process.exit(1)\""
+	},
+	"devDependencies": {
+		"@fission-ai/openspec": "1.10.0"
+	}
+}

@@ -10,9 +10,6 @@ updates:
       - dependency-type: 'all'
     labels:
       - dependencies
-    ignore:
-      # Owned by the Bump OpenSpec workflow, which verifies the build against the new version.
-      - dependency-name: '@fission-ai/openspec'
     commit-message:
       prefix: 'chore(deps)'
       prefix-development: 'chore(deps-dev)'

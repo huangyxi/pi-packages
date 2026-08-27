@@ -1,14 +1,11 @@
-import { execFileSync } from 'node:child_process';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const scriptPath = join(packageRoot, 'scripts', 'generate-assets.ts');
+import { generateAssets } from '../scripts/generate-assets';
 
 function resolveOpenspecEntry(): string | undefined {
 	try {
@@ -31,7 +28,7 @@ describe.skipIf(openspecEntry === undefined)('OpenSpec asset generation', () => 
 		generated ??= (async () => {
 			const outDir = await mkdtemp(join(tmpdir(), 'pi-openspec-assets-'));
 			generatedDirs.push(outDir);
-			execFileSync(process.execPath, [scriptPath, '--out', outDir], { stdio: 'pipe' });
+			await generateAssets(outDir);
 			return outDir;
 		})();
 		return generated;

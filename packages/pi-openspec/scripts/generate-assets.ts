@@ -1,14 +1,12 @@
 /**
- * Generates the package's OpenSpec skills and /opsx-* prompt templates.
+ * Renders the OpenSpec skills and /opsx-* prompt templates into a directory.
  *
- * Renders exactly the artifacts `openspec init --tools pi` would write into a
- * project, but into this package's `dist/` so Pi loads them from the package
- * manifest without a per-project init run. Content always comes from the
- * pinned `@fission-ai/openspec` devDependency — never from checked-in copies —
- * so the generated skills and prompts track the upstream release they were
- * rendered with (recorded in the `generatedBy` frontmatter).
- *
- * Usage: node scripts/generate-assets.ts [--out <dir>]
+ * Produces exactly the artifacts `openspec init --tools pi` would write into a
+ * project (`.pi/skills/`, `.pi/prompts/`), so the caller can place them wherever
+ * Pi loads them from. Content always comes from the pinned
+ * `@fission-ai/openspec` devDependency — never from checked-in copies — so the
+ * generated skills and prompts track the upstream release they were rendered
+ * with (recorded in the `generatedBy` frontmatter).
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -93,7 +91,7 @@ async function loadModule<T>(file: string): Promise<T> {
 	return (await import(pathToFileURL(file).href)) as T;
 }
 
-async function generateAssets(outDir: string): Promise<{ skills: number; prompts: number; version: string }> {
+export async function generateAssets(outDir: string): Promise<{ skills: number; prompts: number; version: string }> {
 	const openspecRoot = resolveOpenspecRoot();
 	const dist = join(openspecRoot, 'dist');
 	const manifest = JSON.parse(await readFile(join(openspecRoot, 'package.json'), 'utf8')) as { version: string };
@@ -139,19 +137,15 @@ async function generateAssets(outDir: string): Promise<{ skills: number; prompts
 	}
 
 	const commands = commandGenerator.generateCommands(skillGeneration.getCommandContents(), piAdapterModule.piAdapter);
+	const conflicting = commands.find((command) => basename(command.path) === 'opsx-init.md');
+	if (conflicting !== undefined) {
+		throw new Error(
+			'OpenSpec now generates an opsx-init prompt that conflicts with the /opsx-init extension command',
+		);
+	}
 	for (const command of commands) {
 		await writeFile(join(promptsDir, basename(command.path)), command.fileContent);
 	}
 
 	return { skills: skillCount, prompts: commands.length, version: manifest.version };
 }
-
-const outIndex = process.argv.indexOf('--out');
-const outArg = outIndex === -1 ? undefined : process.argv[outIndex + 1];
-if (outIndex !== -1 && outArg === undefined) {
-	throw new Error('--out requires a directory');
-}
-const outDir = outArg ?? join(import.meta.dirname, '..', 'dist');
-const { skills, prompts, version } = await generateAssets(outDir);
-const summary = JSON.stringify({ skills, prompts, version, outDir });
-console.log(`Generated OpenSpec assets from @fission-ai/openspec ${version}: ${summary}`);

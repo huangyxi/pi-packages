@@ -35,7 +35,7 @@
 	],
 	"scripts": {
 		"build": "vite build",
-		"postinstall": "node dist/installShim.js",
+		"postinstall": "node dist/installShim.js || echo \"@hyxi/pi-openspec: dist/installShim.js not built (or failed to run); run pnpm run build. The openspec wrap script was not installed.\"",
 		"check": "run-s lint typecheck test",
 		"lint": "run-p --continue-on-error lint:*",
 		"lint:eslint": "eslint .",

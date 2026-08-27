@@ -1,12 +1,12 @@
 // @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.
 // Runs the @fission-ai/openspec CLI bundled with the pi-openspec package.
-// The CLI is located at run time so the script survives the agent
-// directory moving to another machine.
+// The CLI is located at run time so the script keeps working if the whole
+// agent directory (for example ~/.pi/agent) moves to another machine.
 //
 // This file is a build entry (dist/openspecShim.js), compiled to plain JS
 // because the installed bin script is extensionless (Node only type-strips
-// .ts files). The installer writes the final header (node shebang + marker)
-// when it copies the artifact into the agent's bin directory.
+// `.ts` files). The installer writes the final header (node shebang +
+// marker) when it copies the artifact into the agent's bin directory.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -15,18 +15,6 @@ import { dirname, isAbsolute, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const PACKAGE_NAME = '@hyxi/pi-openspec';
-
-/**
- * npm's default global install location, or undefined when it cannot be
- * determined.
- */
-function npmGlobalRoot() {
-	try {
-		return join(execFileSync('npm', ['prefix', '--global'], { encoding: 'utf8' }).trim(), 'lib');
-	} catch {
-		return undefined;
-	}
-}
 
 interface Settings {
 	name?: string;
@@ -37,13 +25,14 @@ interface PackageJson {
 	name?: string;
 }
 
-/**
- * Yields the package roots recorded in pi's settings for local-path
- * installs — pi never runs npm for those, so the bundled CLI sits under
- * the registered path instead of an npm root.
- *
- * @generator Yields each matching package directory in order.
- */
+function npmGlobalRoot(): string | undefined {
+	try {
+		return join(execFileSync('npm', ['prefix', '--global'], { encoding: 'utf8' }).trim(), 'lib');
+	} catch {
+		return undefined;
+	}
+}
+
 function* settingsPackageRoots() {
 	const override = process.env.PI_CODING_AGENT_DIR;
 	const agentDir =
@@ -85,26 +74,25 @@ function* settingsPackageRoots() {
 	}
 }
 
-/**
- * Yields the directories whose node_modules trees are searched for the
- * bundled CLI. The npm global root and the settings roots run last, so
- * their lookups only happen when the other roots did not resolve.
- *
- * @generator Yields each search root in order.
- */
 function* searchRoots() {
+	// Where pi installs npm packages at the user scope.
 	yield join(import.meta.dirname, '..', 'npm');
+	// Where pi installs npm packages at the project scope.
 	yield join(process.cwd(), '.pi', 'npm');
+	// Local-path installs (no node_modules) and plain development checkouts.
 	yield process.cwd();
+	// npm's default global install location.
 	const globalRoot = npmGlobalRoot();
 	if (globalRoot !== undefined) {
 		yield globalRoot;
 	}
+	// Local-path installs register the package path in pi's settings.json
+	// instead of copying it into node_modules; checked last.
 	yield* settingsPackageRoots();
 }
 
-const searched = [];
-let bin;
+const searched: string[] = [];
+let bin: string | undefined = undefined;
 for (const root of searchRoots()) {
 	searched.push(root);
 	try {

@@ -1,0 +1,72 @@
+name: Sync OpenSpec Version
+
+# Keeps the pi-openspec package version in step with the pinned
+# @fission-ai/openspec dependency. When a dependency bump lands on main,
+# this opens a pull request aligning the package version so the next release
+# ships under the matching version.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/pi-openspec/package.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync pi-openspec version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 'latest'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - id: version
+        name: Compare package and OpenSpec versions
+        run: |
+          manifest=packages/pi-openspec/package.json
+          package=$(node --print "require('./$manifest').version")
+          openspec=$(node --print "require('./$manifest').dependencies['@fission-ai/openspec']")
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "openspec=$openspec" >> "$GITHUB_OUTPUT"
+          if [ "$package" != "$openspec" ]; then
+            echo "sync=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Sync package version
+        if: steps.version.outputs.sync == 'true'
+        env:
+          OPENSPEC_VERSION: ${{ steps.version.outputs.openspec }}
+        run: |
+          node --input-type=module --eval "const { readFileSync, writeFileSync } = await import('node:fs'); const file = 'packages/pi-openspec/package.json'; const manifest = JSON.parse(readFileSync(file, 'utf8')); manifest.version = process.env.OPENSPEC_VERSION; writeFileSync(file, JSON.stringify(manifest, null, '\t') + '\n');"
+      - name: Install dependencies
+        if: steps.version.outputs.sync == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Check package
+        if: steps.version.outputs.sync == 'true'
+        run: |
+          pnpm --filter @hyxi/pi-openspec run check
+          pnpm --filter @hyxi/pi-openspec run build
+          pnpm --filter @hyxi/pi-openspec run smoke
+      - name: Open pull request
+        if: steps.version.outputs.sync == 'true'
+        run: |
+          branch="chore/sync-openspec-version-${{ steps.version.outputs.openspec }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add packages/pi-openspec/package.json
+          git commit -m "chore(release): bump pi-openspec to ${{ steps.version.outputs.openspec }}"
+          git push -u origin "$branch"
+          gh pr create \
+            --title "chore(release): bump pi-openspec to ${{ steps.version.outputs.openspec }}" \
+            --body "Syncs the package version with the pinned @fission-ai/openspec dependency." \\
+            --label dependencies

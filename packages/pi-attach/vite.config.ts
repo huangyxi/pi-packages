@@ -1,4 +1,4 @@
-import { defineExtensionConfig } from '../../utils/vite.ts';
+import { defineExtensionConfig } from '../../utils/vite';
 import packageMetadata from './package.json' with { type: 'json' };
 
 export default defineExtensionConfig({

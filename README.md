@@ -18,3 +18,4 @@ Pi installs packages globally by default. Add `-l` to install into the current p
 | ----------------------------------------- | ---------------------------------- | --------------------------------------------------------------- |
 | [@hyxi/pi-attach](packages/pi-attach)     | `pi install npm:@hyxi/pi-attach`   | Bounded context from explicit file and URL attachment mentions. |
 | [@hyxi/pi-envguard](packages/pi-envguard) | `pi install npm:@hyxi/pi-envguard` | Environment filtering and tool-result redaction.                |
+| [@hyxi/pi-openspec](packages/pi-openspec) | `pi install npm:@hyxi/pi-openspec` | OpenSpec skills and `/opsx-*` prompts as a Pi package.          |

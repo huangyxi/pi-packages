@@ -30,6 +30,7 @@ Clean, validate, pack, smoke-test, and stage one existing workspace package for 
 
 Stages:
   clean    Remove all Git-ignored files and directories inside the package.
+  install  Reinstall dependencies from the lockfile (the clean removed node_modules).
   check    Run the package check script.
   build    Run the package build script.
   pack     Create an npm tarball explicitly.
@@ -275,6 +276,7 @@ async function main(): Promise<void> {
 	console.log(`Staging ${manifest.name}@${manifest.version} from ${packageDirectory}`);
 
 	await cleanIgnoredFiles(packageDirectory, packageEnvironment);
+	await run('pnpm', ['install', '--frozen-lockfile'], root, packageEnvironment);
 	await run('pnpm', ['check'], packageDirectory, packageEnvironment);
 	await run('pnpm', ['build'], packageDirectory, packageEnvironment);
 	const tarballPath = await packPackage(packageDirectory, packageEnvironment);

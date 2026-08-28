@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { defineConfig, type UserConfig } from 'vite';
+import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import banner from 'vite-plugin-banner';
 
 interface PackageMetadata {
@@ -11,9 +11,14 @@ interface PackageMetadata {
 }
 
 interface ExtensionConfigOptions {
+	/** The package's identity fields (name, version, license, homepage) used to render the build banner. */
 	packageMetadata: PackageMetadata;
+	/** Library entry points; defaults to the standard extension entry. */
 	entries?: Record<string, string>;
+	/** Dependency package names kept as external imports; node: builtins are always external. */
 	externalDependencies?: readonly string[];
+	/** Extra plugins appended after the shared banner plugin. */
+	plugins?: Plugin[];
 	/** Emit compact output by default; false preserves formatting and identifier names. */
 	minify?: boolean;
 }
@@ -42,10 +47,11 @@ export function defineExtensionConfig({
 	packageMetadata,
 	entries = { extension: 'src/extension.ts' },
 	externalDependencies = [],
+	plugins = [],
 	minify = true,
 }: ExtensionConfigOptions): UserConfig {
 	return defineConfig({
-		plugins: [packageBanner(packageMetadata)],
+		plugins: [packageBanner(packageMetadata), ...plugins],
 		resolve: {
 			alias: {
 				'@': resolve(import.meta.dirname, '..'),

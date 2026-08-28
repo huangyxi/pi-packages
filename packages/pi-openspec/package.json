@@ -1,0 +1,53 @@
+{
+	"name": "@hyxi/pi-openspec",
+	"version": "0.1.0",
+	"description": "OpenSpec skills and `/opsx-*` prompts as a Pi package.",
+	"license": "MIT",
+	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-openspec",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/huangyxi/pi-packages.git",
+		"directory": "packages/pi-openspec"
+	},
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"openspec",
+		"skills",
+		"prompt-templates"
+	],
+	"type": "module",
+	"pi": {
+		"extensions": [
+			"./dist/extension.js"
+		],
+		"skills": [
+			"./dist/skills"
+		],
+		"prompts": [
+			"./dist/prompts"
+		]
+	},
+	"main": "./dist/extension.js",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "vite build",
+		"postinstall": "node dist/installShim.js || echo \"@hyxi/pi-openspec: dist/installShim.js not built (or failed to run); run pnpm run build. The openspec wrap script was not installed.\"",
+		"check": "run-s lint typecheck test",
+		"lint": "run-p --continue-on-error lint:*",
+		"lint:eslint": "eslint .",
+		"lint:prettier": "prettier --check .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"format": "run-s format:*",
+		"format:eslint": "eslint . --fix",
+		"format:prettier": "prettier --write --list-different .",
+		"smoke": "node scripts/smoke.ts"
+	},
+	"dependencies": {
+		"@fission-ai/openspec": "1.10.0"
+	}
+}

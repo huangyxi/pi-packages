@@ -67,7 +67,7 @@ jobs:
         env:
           OPENSPEC_VERSION: ${{ needs.detect.outputs.openspec }}
         run: |
-          branch="chore/sync-openspec-version-$OPENSPEC_VERSION"
+          branch="pi-openspec/chore-sync-version-$OPENSPEC_VERSION"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"

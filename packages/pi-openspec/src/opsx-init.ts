@@ -9,16 +9,11 @@ export interface InstalledAssets {
 	prompts: string[];
 }
 
-/** The package's `dist/` directory, resolved from this module's own location. */
 export function resolveAssetsRoot(): string {
 	return dirname(fileURLToPath(import.meta.url));
 }
 
-/**
- * Copies the package's generated skills and prompts into a project's `.pi/`
- * directory, mirroring what `openspec init` writes for the pi tool. Existing
- * files are overwritten; files not produced by the package are left alone.
- */
+/** Copies generated OpenSpec assets into a project's `.pi/` directory. */
 export async function installOpenspecAssets(assetsRoot: string, projectDir: string): Promise<InstalledAssets> {
 	const skillsSource = join(assetsRoot, 'skills');
 	const promptsSource = join(assetsRoot, 'prompts');

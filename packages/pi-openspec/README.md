@@ -23,11 +23,11 @@ The skills and prompts are generated from the pinned `@fission-ai/openspec` rele
 
 ## How It Works
 
-On install (and on update) the package writes the `openspec` wrap script into the agent's bin directory (`~/.pi/agent/bin` by default) — a directory Pi prepends to the bash tool's PATH. A file already present at that path without the package's managed marker is treated as user-managed and left untouched.
+On install, update, and startup the Pi extension writes the `openspec` wrap script into the agent's bin directory (`~/.pi/agent/bin` by default) — a directory Pi prepends to the bash tool's PATH. A file already present at that path without the package's managed marker is treated as user-managed and left untouched.
 
 ## Development
 
-- `pnpm run build` bundles the extension and renders the exact artifacts `openspec init --tools pi` writes for the `pi` tool from the installed `@fission-ai/openspec` package, placing everything under `dist/`. No skills or prompts are committed to the repository. The `postinstall` hook runs the built installer (`dist/installShim.js`); on a fresh checkout, before the first build, it skips with a note instead of failing.
+- `pnpm run build` bundles the extension and renders the exact artifacts `openspec init --tools pi` writes for the `pi` tool from the installed `@fission-ai/openspec` package, placing everything under `dist/`. No skills or prompts are committed to the repository. The extension's `session_start` hook runs the built installer after Pi loads the package, including installs performed with npm lifecycle scripts disabled.
 - The wrap script is a plain Node script that locates the bundled CLI at run time (the agent's npm root, the working directory, npm's global install location, and the package path recorded in Pi's settings for local-path installs), so it keeps working if the agent directory moves to another machine. It is built as a plain JS entry from its TypeScript source (`src/openspec-shim.ts` to `dist/openspecShim.js`), because the installed file is extensionless and Node only type-strips `.ts` files. `@fission-ai/openspec` is a runtime dependency, not a dev-only one, so the CLI exists wherever the package is installed.
-- For a local-path install (`pi install /path/to/pi-openspec`) Pi never runs npm, so the `postinstall` hook does not fire — run `node dist/installShim.js` once after `pnpm run build`.
+- For a local-path install (`pi install /path/to/pi-openspec`), Pi loads the extension on startup and runs the same installer; `node dist/installShim.js` remains available for manual use after `pnpm run build`.
 - The package version tracks the pinned `@fission-ai/openspec` version. Dependabot opens pull requests for new releases, and the [Sync OpenSpec Version workflow](../../.github/workflows/sync-openspec-version.yml) aligns the package version with the pinned dependency.

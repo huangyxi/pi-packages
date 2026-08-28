@@ -67,9 +67,7 @@ function* settingsPackageRoots() {
 				if (packageJson.name === PACKAGE_NAME) {
 					yield packageDir;
 				}
-			} catch {
-				// Not a package directory (e.g. a bare npm spec).
-			}
+			} catch {}
 		}
 	}
 }
@@ -99,9 +97,7 @@ for (const root of searchRoots()) {
 		const entry = createRequire(join(root, 'index.js')).resolve('@fission-ai/openspec');
 		bin = join(dirname(dirname(entry)), 'bin', 'openspec.js');
 		break;
-	} catch {
-		// Try the next search root.
-	}
+	} catch {}
 }
 if (bin === undefined) {
 	console.error(`openspec: bundled @fission-ai/openspec not found (searched: ${searched.join(', ')})`);

@@ -37,7 +37,7 @@ function detect(): void {
 	const openspec = readManifest().dependencies['@fission-ai/openspec'] ?? '';
 	const beforeSha = process.env.BEFORE_SHA ?? '';
 	const eventName = process.env.GITHUB_EVENT_NAME ?? '';
-	let changed = eventName === 'workflow_dispatch' || beforeSha === zeroSha;
+	let changed = eventName === 'workflow_dispatch' || eventName === 'schedule' || beforeSha === zeroSha;
 
 	if (!changed) {
 		if (!hasManifestAt(beforeSha)) {

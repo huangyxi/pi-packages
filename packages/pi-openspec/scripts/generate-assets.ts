@@ -1,13 +1,4 @@
-/**
- * Renders the OpenSpec skills and /opsx-* prompt templates into a directory.
- *
- * Produces exactly the artifacts `openspec init --tools pi` would write into a
- * project (`.pi/skills/`, `.pi/prompts/`), so the caller can place them wherever
- * Pi loads them from. Content always comes from the pinned
- * `@fission-ai/openspec` devDependency — never from checked-in copies — so the
- * generated skills and prompts track the upstream release they were rendered
- * with (recorded in the `generatedBy` frontmatter).
- */
+/** Render upstream OpenSpec assets into the package's distribution directory. */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename, dirname, join } from 'node:path';
@@ -81,7 +72,6 @@ interface PiAdapterModule {
 	piAdapter: CommandAdapter;
 }
 
-/** Resolves the installed package root from its exported entry point. */
 function resolveOpenspecRoot(): string {
 	const entry = createRequire(import.meta.url).resolve('@fission-ai/openspec');
 	return dirname(dirname(entry));

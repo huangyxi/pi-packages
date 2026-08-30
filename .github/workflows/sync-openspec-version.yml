@@ -66,17 +66,11 @@ jobs:
           pnpm --filter @hyxi/pi-openspec run smoke
       - name: Open pull request
         if: steps.package.outputs.changed == 'true'
-        env:
-          OPENSPEC_VERSION: ${{ needs.detect.outputs.openspec }}
-        run: |
-          branch="pi-openspec/chore-sync-version-$OPENSPEC_VERSION"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$branch"
-          git add packages/pi-openspec/package.json
-          git commit -m "chore(release): bump pi-openspec to $OPENSPEC_VERSION"
-          git push -u origin "$branch"
-          gh pr create \
-            --title "chore(release): bump pi-openspec to $OPENSPEC_VERSION" \
-            --body "Syncs the package version with the pinned @fission-ai/openspec dependency." \
-            --label dependencies
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: 'chore(release): bump pi-openspec to ${{ needs.detect.outputs.openspec }}'
+          branch: 'pi-openspec/chore-sync-version-${{ needs.detect.outputs.openspec }}'
+          delete-branch: true
+          title: 'chore(release): bump pi-openspec to ${{ needs.detect.outputs.openspec }}'
+          body: 'Syncs the package version with the pinned @fission-ai/openspec dependency.'
+          labels: dependencies

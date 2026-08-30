@@ -2,17 +2,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
-const PACKAGE_NAME = '@hyxi/pi-openspec';
 const SHIM_NAME = 'openspec';
 const SHEBANG = '#!/usr/bin/env node';
-const MARKER_LINE = '// @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.';
+const MARKER_LINE = '//! @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.';
 
-const MANAGED_MARKER_RE = /^\/\/ @pi-openspec-shim v\d+ — managed by @hyxi\/pi-openspec; do not edit\.$/m;
-const MARKER_LINE_RE = /^\/\/ @pi-openspec-shim v\d+ — managed by @hyxi\/pi-openspec; do not edit\.\n?/m;
+const MANAGED_MARKER_RE = /^\/\/! @pi-openspec-shim v\d+ — managed by @hyxi\/pi-openspec; do not edit\.$/m;
+const MARKER_LINE_RE = /^\/\/! @pi-openspec-shim v\d+ — managed by @hyxi\/pi-openspec; do not edit\.\n?/m;
 
 function resolveShimSource(): string {
 	const built = join(import.meta.dirname, 'openspecShim.js');
@@ -83,15 +81,3 @@ export const __test__ = {
 	readShimSource,
 	resolveAgentBinDir,
 };
-
-const isMain = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (isMain) {
-	try {
-		const result = await installShim();
-		console.log(`${PACKAGE_NAME}: openspec wrap script ${result.status} at ${result.path}`);
-	} catch (error) {
-		console.warn(
-			`${PACKAGE_NAME}: could not install the openspec wrap script: ${error instanceof Error ? error.message : String(error)}`,
-		);
-	}
-}

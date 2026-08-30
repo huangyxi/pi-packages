@@ -21,10 +21,9 @@ export default defineExtensionConfig({
 	packageMetadata,
 	entries: {
 		extension: 'src/extension.ts',
-		installShim: 'src/install-shim.ts',
+		installShim: 'src/install-shim-cli.ts',
 		openspecShim: 'src/openspec-shim.ts',
 	},
 	externalDependencies: ['@earendil-works/pi-coding-agent'],
-	minify: false,
 	plugins: [openspecAssets],
 });

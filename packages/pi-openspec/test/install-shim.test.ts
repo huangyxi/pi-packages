@@ -37,9 +37,12 @@ afterEach(async () => {
 	await Promise.all(paths.splice(0).map((path) => rm(path, { recursive: true, force: true })));
 });
 
-// The installer copies the built wrap script; build it if this run starts from a clean tree.
+// The installer copies the built wrap script; keep the direct CLI test aligned with source.
 beforeAll(async () => {
-	if (!existsSync(join(packageRoot, 'dist', 'openspecShim.js'))) {
+	if (
+		!existsSync(join(packageRoot, 'dist', 'openspecShim.js')) ||
+		!existsSync(join(packageRoot, 'dist', 'installShim.js'))
+	) {
 		await execFileAsync('npm', ['run', 'build'], { cwd: packageRoot });
 	}
 });
@@ -58,8 +61,24 @@ describe('shim source', () => {
 	it('is a node script carrying the managed marker and no machine-specific paths', () => {
 		const source = readShimSource();
 		expect(source.startsWith('#!/usr/bin/env node\n')).toBe(true);
-		expect(source).toContain('// @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.');
+		expect(source).toContain('//! @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.');
 		expect(source).not.toContain(homedir());
+	});
+});
+
+describe('built install CLI', () => {
+	it('installs the shim when invoked with node', async () => {
+		const root = await tempDir('pi-openspec-cli-');
+		const agentDir = join(root, 'agent');
+		const { stdout } = await execFileAsync(process.execPath, [join(packageRoot, 'dist', 'installShim.js')], {
+			env: { ...process.env, PI_CODING_AGENT_DIR: agentDir },
+		});
+
+		expect(stdout).toContain('openspec wrap script installed');
+		const shimPath = join(agentDir, 'bin', 'openspec');
+		expect(await readFile(shimPath, 'utf8')).toBe(readShimSource());
+		const { mode } = await stat(shimPath);
+		expect(mode & 0o111).not.toBe(0);
 	});
 });
 
@@ -85,7 +104,7 @@ describe('installShim', () => {
 
 		await writeFile(
 			shimPath,
-			'#!/usr/bin/env node\n// @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.\n// stale content\n',
+			'#!/usr/bin/env node\n/*!\n*/\n//! @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.\n// stale content\n',
 		);
 		await expect(installShim({ binDir })).resolves.toMatchObject({ status: 'updated' });
 		expect(await readFile(shimPath, 'utf8')).toBe(readShimSource());

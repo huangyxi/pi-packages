@@ -1,12 +1,5 @@
-// @pi-openspec-shim v1 — managed by @hyxi/pi-openspec; do not edit.
 // Runs the @fission-ai/openspec CLI bundled with the pi-openspec package.
-// The CLI is located at run time so the script keeps working if the whole
-// agent directory (for example ~/.pi/agent) moves to another machine.
-//
-// This file is a build entry (dist/openspecShim.js), compiled to plain JS
-// because the installed bin script is extensionless (Node only type-strips
-// `.ts` files). The installer writes the final header (node shebang +
-// marker) when it copies the artifact into the agent's bin directory.
+
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';

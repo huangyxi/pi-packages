@@ -36,8 +36,7 @@ function output(name: string, value: string | boolean): void {
 function detect(): void {
 	const openspec = readManifest().dependencies['@fission-ai/openspec'] ?? '';
 	const beforeSha = process.env.BEFORE_SHA ?? '';
-	const eventName = process.env.GITHUB_EVENT_NAME ?? '';
-	let changed = eventName === 'workflow_dispatch' || eventName === 'schedule' || beforeSha === zeroSha;
+	let changed = beforeSha === zeroSha;
 
 	if (!changed) {
 		if (!hasManifestAt(beforeSha)) {
@@ -65,7 +64,7 @@ function detect(): void {
 	output('changed', changed);
 }
 
-function sync(version: string | undefined): void {
+function sync(version?: string): void {
 	const requiredVersion = version ?? '';
 	if (requiredVersion === '') throw new Error('OpenSpec version is required');
 	const original = readFileSync(manifestPath, 'utf8');

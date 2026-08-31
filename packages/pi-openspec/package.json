@@ -1,6 +1,6 @@
 {
 	"name": "@hyxi/pi-openspec",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "OpenSpec skills and `/opsx-*` prompts as a Pi package.",
 	"license": "MIT",
 	"homepage": "https://github.com/huangyxi/pi-packages/tree/main/packages/pi-openspec",

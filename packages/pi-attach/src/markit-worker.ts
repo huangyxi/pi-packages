@@ -8,7 +8,7 @@ async function processRequest(message: unknown): Promise<void> {
 			typeof message.value !== 'string'
 		)
 			throw new Error('invalid request');
-		const { Markit } = await import('markit-ai');
+		const { Markit } = await import('@shiftlabs/markit');
 		const markit = new Markit();
 		const result =
 			message.kind === 'file' ? await markit.convertFile(message.value) : await markit.convertUrl(message.value);

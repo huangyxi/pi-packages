@@ -41,6 +41,6 @@
 		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
 	},
 	"dependencies": {
-		"markit-ai": "0.5.3"
+		"@shiftlabs/markit": "0.6.1"
 	}
 }

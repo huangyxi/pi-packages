@@ -7,5 +7,5 @@ export default defineExtensionConfig({
 		extension: 'src/extension.ts',
 		'markit-worker': 'src/markit-worker.ts',
 	},
-	externalDependencies: ['markit-ai', '@earendil-works/pi-coding-agent'],
+	externalDependencies: ['@shiftlabs/markit', '@earendil-works/pi-coding-agent'],
 });

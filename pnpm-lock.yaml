@@ -199,8 +199,8 @@ packages:
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-client@0.84.2':
-    resolution: {integrity: sha512-/RFSPhD/bZbpOp1oJj+UneSUFSgZhWxzcSENUY+8+8xhoBrWXMYI2t77XNx4Yf+c8YK2qTHquForhNcelYpXvg==}
+  '@earendil-works/pi-client@0.84.4':
+    resolution: {integrity: sha512-q398WY/3ZQHTizk7IKxApzqFV0xt4yM9LkSkwyqeLK5Bj5RwRjOWxESt26z4LgNp4O+8hqhqFPf/8fj4H5rE4A==}
     engines: {node: '>=22.19.0'}
 
   '@earendil-works/pi-coding-agent@0.84.1':
@@ -2243,7 +2243,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-client@0.84.2':
+  '@earendil-works/pi-client@0.84.4':
     dependencies:
       '@earendil-works/pi-protocol': 0.84.4
 
@@ -2251,7 +2251,7 @@ snapshots:
     dependencies:
       '@earendil-works/pi-agent-core': 0.84.2(ws@8.21.3)(zod@4.4.3)
       '@earendil-works/pi-ai': 0.84.2(ws@8.21.3)(zod@4.4.3)
-      '@earendil-works/pi-client': 0.84.2
+      '@earendil-works/pi-client': 0.84.4
       '@earendil-works/pi-protocol': 0.84.4
       '@earendil-works/pi-tui': 0.84.2
       '@silvia-odwyer/photon-node': 0.3.4

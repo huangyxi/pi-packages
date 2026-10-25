@@ -47,6 +47,6 @@
 		"smoke": "node scripts/smoke.ts"
 	},
 	"dependencies": {
-		"@fission-ai/openspec": "1.10.0"
+		"@fission-ai/openspec": "1.14.3"
 	}
 }

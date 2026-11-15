@@ -41,6 +41,6 @@
 		"smoke": "node --input-type=module --eval \"const extension = await import('./dist/extension.js'); if (typeof extension.default !== 'function') process.exit(1)\""
 	},
 	"dependencies": {
-		"@shiftlabs/markit": "0.6.1"
+		"@shiftlabs/markit": "0.7.2"
 	}
 }
